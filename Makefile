@@ -1,8 +1,8 @@
 get-db:
-	curl -L "https://www.dropbox.com/s/tdxy5xuzkdzyzxa/atus.db?dl=1" > atus.db
+	curl -L "https://www.dropbox.com/s/tdxy5xuzkdzyzxa/atus.db?dl=1" > db/atus.db
 
 db:
-	echo "NO-OP"
+	cd db; python create_database.py
 
 get-codebook:
 	curl "https://gist.github.com/sbirch/7633008/raw" > coding-lexicon/codebook.json
