@@ -1,5 +1,9 @@
 *.py[cod]
 
+# ATUS-specific
+*.db
+*.zip
+
 # C extensions
 *.so
 
