@@ -10,7 +10,7 @@ import time
 
 parser = argparse.ArgumentParser(description='Locate input files')
 parser.add_argument('-z', '--zipfile-location', dest='path',
-	default='/Users/Alexander/Dropbox/ATUS-195W/data/test_zip/',
+	default='~/Dropbox/ATUS-195W/data/test_zip/',
 	help='The location of the zipfiles with the ATUS data')
 args = parser.parse_args()
 arg_dict = vars(args)
