@@ -5,9 +5,13 @@ db:
 	cd db; python create_database.py
 
 get-codebook:
-	curl "https://gist.github.com/sbirch/7633008/raw" > coding-lexicon/codebook.json
+	curl "https://gist.github.com/sbirch/7633008/raw" > activity-lexicon/codebook.json
 
 codebook:
 	@echo "Note: building the lexicon requires pyPdf (https://pypi.python.org/pypi/pyPdf)."
-	cd coding-lexicon; python extract.py
-	@echo "Built coding-lexicon/codebook.json"
+	cd activity-lexicon; python extract.py
+	@echo "Built activity-lexicon/codebook.json"
+
+clean:
+	rm -i activity-lexicon/codebook.json
+	rm -i db/atus.db
