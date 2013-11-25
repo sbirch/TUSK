@@ -1,3 +1,5 @@
+.PHONY: get-db db get-codebook codebook clean
+
 get-db:
 	curl -L "https://www.dropbox.com/s/tdxy5xuzkdzyzxa/atus.db?dl=1" > db/atus.db
 
