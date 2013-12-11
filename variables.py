@@ -37,7 +37,10 @@ Variables = {
 	'household_members': 'HRNUMHOU',
 	'weekly_earnings': 'TEERN/100.0',
 	'friend_time': 'TRTFAMILY',
-	'family_time': 'TRTFRIEND'
+	'family_time': 'TRTFRIEND',
+	'case_id': 'TUCASEID',
+	# TODO: this is only the right name in the multi-year files
+	'person_weight': 'TUFNWGTP'
 
 	# occupation
 	# race
