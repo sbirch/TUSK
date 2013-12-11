@@ -37,7 +37,8 @@ Variables = {
 	'household_members': 'HRNUMHOU',
 	'weekly_earnings': 'TEERN/100.0',
 	'friend_time': 'TRTFAMILY',
-	'family_time': 'TRTFRIEND'
+	'family_time': 'TRTFRIEND',
+	'case_id': 'TUCASEID'
 
 	# occupation
 	# race
