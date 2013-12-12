@@ -1,1 +1,2 @@
 dataset==0.3.14
+sqlparse==0.1.10

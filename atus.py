@@ -126,9 +126,9 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter):
 
 	raise NotImplemented()
 
-if __name__ == '__main__': # Jana approved
-	db = ATUS(dataset.connect('sqlite:///db/atus.db'))
+db = ATUS(dataset.connect('sqlite:///db/atus.db'))
 
+if __name__ == '__main__':
 	while True:
 		query = raw_input('> ')
 		if query.strip().lower() in ['.quit', 'quit']:

@@ -23,6 +23,7 @@ def interp_varname(varname):
 # TODO define any functions needed for the binding
 # TODO how should we deal with cross-table selects?
 # TODO null code -1 values
+# TODO see variableNotes
 Variables = {
 	'age': 'TEAGE',
 	'region_code': 'GEREG',
