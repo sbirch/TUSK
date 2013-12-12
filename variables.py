@@ -47,3 +47,11 @@ Variables = {
 	# race
 	# household income
 }
+
+Tables = {
+	'activities': 'atusact_0312',
+	'activities_summary': 'atussum_0312'
+}
+
+#TODO: Make correct
+summary_variables = ['TEAGE', 'PEEDUCA', 'TUYEAR']
