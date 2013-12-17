@@ -36,9 +36,9 @@ Variables = {
 	'cps_month': 'HRMONTH',
 	'weekday_code': 'TUDIARYDAY',
 	'household_members': 'HRNUMHOU',
-	'weekly_earnings': 'TEERN/100.0',
-	'friend_time': 'TRTFAMILY',
-	'family_time': 'TRTFRIEND',
+	'weekly_earnings': '(TEERN/100.0)',
+	'friend_time': 'TRTFRIEND',
+	'family_time': 'TRTFAMILY',
 	'case_id': 'TUCASEID',
 	# TODO: this is only the right name in the multi-year files
 	'person_weight': 'TUFNWGTP'
@@ -48,10 +48,11 @@ Variables = {
 	# household income
 }
 
+# n.b. this will have to change from a 1-1 mapping to be robust to different
+# data sources. Will have to look at what tables are available.
 Tables = {
 	'activities': 'atusact_0312',
-	'activities_summary': 'atussum_0312'
+	'summary': 'atussum_0312',
+	'respondents': 'atusresp_0312',
+	'roster': 'atusrost_0312'
 }
-
-#TODO: Make correct
-summary_variables = ['TEAGE', 'PEEDUCA', 'TUYEAR']

@@ -2,25 +2,25 @@ import dataset
 import readline
 import sqlparse
 import sqlparse.sql as sql
+import sqlparse.tokens as token
 import traceback
 import variables
+import sys
 
 class ATUS:
 	def __init__(self, db):
 		self.db = db
 	def _variable_rewriter(self, mv):
+		table = ''
+		if mv.count('.') == 1:
+			table, mv = mv.split('.', 1)
+			table = self._infer(table) + '.'
 		if mv in variables.Variables:
-			return variables.Variables[mv]
-		return mv
+			mv = variables.Variables[mv]
+		return table + mv
 	def _infer(self, table_ref):
-		# TODO: this should look at what tables are available first
-		tbl = {
-			'respondents': 'atusresp_0312',
-			'activities': 'atusact_0312',
-			'roster': 'atusrost_0312'
-		}
 		try:
-			return tbl[table_ref]
+			return variables.Tables[table_ref]
 		except KeyError:
 			raise Exception('Could not find a table with the name %r'% table_ref)
 	def rewrite(self, q):
@@ -32,6 +32,12 @@ class ATUS:
 	def query(self, q):
 		return self.db.query(self.rewrite(q))
 
+def find(L, f):
+	for i,l in enumerate(L):
+		if f(l):
+			return i
+	return None
+
 def rewrite(sql, table_translator, variable_rewriter):
 	'''
 	Rewrite a SQL statement with the given table translator and
@@ -39,96 +45,149 @@ def rewrite(sql, table_translator, variable_rewriter):
 	WHERE clauses.
 
 	TODO:
-		doesn't handle AS statements in existing code
-		SELECT UNIQUE
-		SELECT DISTINCT
-
-		Assumes a WHERE clause
-
-		error messageing
-
-		select count(*)
-	select TRCODEP from activities where age<18;
-	tokens: [<DML 'select' at 0x1076e2368>, <Whitespace ' ' at 0x1076e2208>, <Name 'TRCODEP' at 0x1076e2418>, <Whitespace ' ' at 0x1076e24c8>, <Keyword 'from' at 0x1076e2050>, <Whitespace ' ' at 0x1076e2100>, <Name 'activi...' at 0x1076e21b0>, <Whitespace ' ' at 0x1076e2310>, <Keyword 'where' at 0x1076e22b8>, <Whitespace ' ' at 0x1076e23c0>, <Name 'age' at 0x1076e2470>, <Comparison '<' at 0x1076e25d0>, <Integer '18' at 0x1076e2578>, <Punctuation ';' at 0x1076e26d8>]
-	Traceback (most recent call last):
-	  File "atus.py", line 109, in <module>
-	    print row
-	  File "atus.py", line 33, in query
-	    return self.db.query(self.rewrite(q))
-	  File "/Library/Python/2.7/site-packages/dataset/persistence/database.py", line 216, in query
-	    return ResultIter(self.executable.execute(query, **kw))
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 1614, in execute
-	    return connection.execute(statement, *multiparams, **params)
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 662, in execute
-	    params)
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 805, in _execute_text
-	    statement, parameters
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 874, in _execute_context
-	    context)
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 1024, in _handle_dbapi_exception
-	    exc_info
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/util/compat.py", line 196, in raise_from_cause
-	    reraise(type(exception), exception, tb=exc_tb)
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/base.py", line 867, in _execute_context
-	    context)
-	  File "/Library/Python/2.7/site-packages/sqlalchemy/engine/default.py", line 324, in do_execute
-	    cursor.execute(statement, parameters)
-	OperationalError: (OperationalError) no such column: age u'select TRCODEP AS TRCODEP from atusact_0312 where age<18;' ()
-
-	
-
+		error messaging
+		GROUP BY, HAVING, ORDER BY
+		table.name
 	'''
+	print 'Rewriting:', sql
 	# TODO only handles the first statement
 	parsed = sqlparse.parse(sql)[0]
+	#print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
 	new_tree = _rewrite_parse_tree(parsed, table_translator, variable_rewriter)
 	return new_tree.to_unicode()
 
-def _rewrite_parse_tree(parsed, table_translator, variable_rewriter):
+def is_base_identifier(t):
+	return isinstance(t, sql.Identifier) or t.ttype in [token.Keyword, token.Name]
+
+def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=None, d=0):
+	dp = '  ' * d
+
 	if isinstance(parsed, sql.Statement) and parsed.get_type() == 'SELECT':
-		tokens = [x for x in parsed.tokens if not x.is_whitespace()]
-		dml, terms, from_keyword, table_id, where_clause = tokens
+		#print dp, 'SELECT case', repr(parsed)
+		#print dp, 'Tokens:', parsed.tokens
+
+		assert parsed.tokens[0].ttype == token.DML
+
+		# find the position of the FROM keyword
+		from_position = find(parsed.tokens,
+			lambda x: x.ttype == token.Keyword and x.value.lower() == 'from')
+		distinct_present = 0 if find(parsed.tokens,
+			lambda x: x.ttype == token.Keyword and x.value.lower() == 'distinct') == None else 1
+
+		# get the selected column tokens and rewrite them
+		terms = [x for x in parsed.tokens[1 + distinct_present:from_position] if not x.is_whitespace()]
+		#print dp, 'Terms:', terms
+		assert len(terms) == 1
+		terms = terms[0]
+		parsed.tokens[parsed.tokens.index(terms)] = _rewrite_parse_tree(
+			terms,
+			table_translator,
+			variable_rewriter,
+			context='result-cols', d=d+1)
+
+		end_join_source = find(parsed.tokens,
+			lambda x: isinstance(x, sql.Where) or (x.ttype == token.Keyword and x.value.lower() in ['order', 'group', 'limit']))
+
+		# replace the table name
+		join_source = parsed.tokens[from_position+1:end_join_source]
+		#print dp, 'Table ID:', table_id
+		for table_id in join_source:
+			if table_id.is_whitespace():
+				continue
+			parsed.tokens[parsed.tokens.index(table_id)] = _rewrite_parse_tree(
+				table_id,
+				table_translator,
+				variable_rewriter,
+				context='table', d=d+1)
 		
-		if isinstance(terms, sql.IdentifierList):
-			replaced_columns = []
-			for term in terms.tokens:
-				if term.ttype in [sqlparse.tokens.Keyword, sqlparse.tokens.Name] or isinstance(term, sql.Identifier):
-					replaced_columns.append(sql.Identifier('%s AS %s' % (variable_rewriter(term.value), term.value)))
-					replaced_columns.append(sql.Token(sqlparse.tokens.Punctuation, ','))
-					replaced_columns.append(sql.Token(sqlparse.tokens.Whitespace, ' '))
-
-			replaced_columns = sql.IdentifierList(replaced_columns[:-2])
-		elif isinstance(terms, sql.Identifier) or terms.ttype in [sqlparse.tokens.Keyword, sqlparse.tokens.Name]:
-			replaced_columns = sql.Identifier('%s AS %s' % (variable_rewriter(terms.value), terms.value))
-
-		parsed.tokens[parsed.tokens.index(terms)] = replaced_columns
-		parsed.tokens[parsed.tokens.index(table_id)] = sql.Identifier(table_translator(table_id.value))
-		parsed.tokens[parsed.tokens.index(where_clause)] = _rewrite_parse_tree(where_clause, table_translator, variable_rewriter)
+		#print dp, 'end_join_source:', end_join_source, repr(parsed.tokens[end_join_source if end_join_source is not None else -1])
+		
+		if end_join_source is not None:
+			for i,tok in enumerate(parsed.tokens[end_join_source:]):
+				if tok.is_whitespace():
+					continue
+				idx = i + end_join_source
+				#print dp, i, idx, repr(parsed.tokens[idx])
+				parsed.tokens[idx] = _rewrite_parse_tree(
+					tok,
+					table_translator,
+					variable_rewriter,
+					d=d+1)
 
 		return parsed
-	elif isinstance(parsed, sql.Where):
-		comparisons = [x for x in parsed.tokens if not x.is_whitespace() and isinstance(x, sql.Comparison)]
-
-		for i,tok in enumerate(parsed.tokens):
-			if isinstance(tok, sql.Comparison):
-				parsed.tokens[i] = _rewrite_parse_tree(tok, table_translator, variable_rewriter)
-			elif isinstance(tok, sql.Identifier) or tok.ttype in [sqlparse.tokens.Keyword, sqlparse.tokens.Name]:
-				rewritten = variable_rewriter(tok.value)
-				if tok.value != rewritten:
-					parsed.tokens[i] = sql.Parenthesis([
-						sql.Token(sqlparse.tokens.Group.Parenthesis, '('),
-						sql.Identifier(rewritten),
-						sql.Token(sqlparse.tokens.Group.Parenthesis, ')')
+	elif is_base_identifier(parsed):
+		#print dp, 'base_identifier case context=%s' % context, repr(parsed)
+		if context == 'result-cols':
+			rewritten = variable_rewriter(parsed.value)
+			if parsed.value != rewritten:
+				#print dp, 'Rewriting result-cols %s => %s' % (parsed.value, variable_rewriter(parsed.value))
+				return sql.Identifier('%s AS %s' % (variable_rewriter(parsed.value), parsed.value))
+			else:
+				#print dp, 'Leaving %r be' % parsed.value
+				return sql.Identifier(parsed.value)
+		elif context == 'table':
+			if parsed.ttype == token.Keyword:
+				return parsed
+			#print dp, 'Rewriting %s => %s' % (parsed.value, table_translator(parsed.value))
+			return sql.Identifier(table_translator(parsed.value))
+		else:
+			rewritten = variable_rewriter(parsed.value)
+			if parsed.value != rewritten:
+				#print dp, 'Rewriting %s => (%s)' % (parsed.value, variable_rewriter(parsed.value))
+				if rewritten[0] == '(' and rewritten[-1] == ')':
+					rewritten = rewritten[1:-1]
+					return sql.Parenthesis([
+							sql.Token(sqlparse.tokens.Group.Parenthesis, '('),
+							sql.Identifier(rewritten),
+							sql.Token(sqlparse.tokens.Group.Parenthesis, ')')
 					])
+				else:
+					return sql.Identifier(rewritten)
+			else:
+				#print dp, 'Leaving %r be' % parsed.value
+			return sql.Identifier(parsed.value)
+	elif isinstance(parsed, sql.TokenList):
+		#print dp, 'token-list case', repr(parsed)
+		for i,tok in enumerate(parsed.tokens):
+			if is_base_identifier(tok) or isinstance(tok, sql.TokenList):
+				parsed.tokens[i] = _rewrite_parse_tree(
+					tok, table_translator, variable_rewriter,
+					context=context if isinstance(parsed, sql.IdentifierList) else None,
+					d=d+1)
+			else:
+				#print dp, 'Leaving %r in place' % tok
 
 		return parsed
-	elif isinstance(parsed, sql.Comparison):
-		return parsed
-
-	raise NotImplemented()
+	else:
+		raise Exception('Do not recognize: %r' % parsed)
 
 db = ATUS(dataset.connect('sqlite:///db/atus.db'))
 
 if __name__ == '__main__':
+
+	'''
+	print '-'* 40
+	print db.rewrite('select age from respondents LEFT JOIN summary as activities ORDER BY age')
+
+	print '-'* 40
+	print db.rewrite('select year from respondents, activities where age=22')
+	
+	print '-'* 40
+	print db.rewrite('select TRCODEP from activities where age<18;')
+	
+	
+	print '-'* 40
+	print db.rewrite('select count(*) from respondents where year=2010')
+	
+	print '-'* 40
+	print db.rewrite('SELECT DISTINCT age from respondents')
+	print '-'* 40
+	print db.rewrite('select age, avg(family_time) from respondents, summary where respondents.case_id = summary.case_id and number_children <= 0 GROUP BY age;')
+	print '-'* 40
+	print db.rewrite('select age, avg(weekly_earnings) from respondents, summary where respondents.case_id = summary.case_id GROUP BY age;')
+
+	
+	'''
 	while True:
 		query = raw_input('> ')
 		if query.strip().lower() in ['.quit', 'quit']:
