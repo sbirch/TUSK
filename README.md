@@ -92,4 +92,4 @@ remains strings even if they represent integer values (in some cases a value of 
 
 See the [CPS data dictionary 2003-2012](http://www.bls.gov/tus/atuscpscodebk0312.pdf)
 and [ATUS interview data dictionary 2003-2012](http://www.bls.gov/tus/atusintcodebk0312.pdf)
-as an example of what this data represents.
+as examples of what this data represents.
