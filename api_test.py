@@ -24,15 +24,14 @@ def count(alpha=0.95, **kwargs):
 	
 	results = atus.db.query('''SELECT count(*) FROM respondents
 		inner join roster on respondents.caseid=roster.caseid and roster.lineno=1 inner join cps on cps.caseid=roster.caseid and cps.lineno=1
-		where %s''' % filters,
-		explain=True)
+		where %s''' % filters, verbose=True)
 
 	for r in results:
 		print r
 		break
 
 if __name__ == '__main__':
-	count(filters='sex_code=2 and age=21')
+	count(filters='age=21 or sex_code=2')
 	sys.exit(0)
 
 
