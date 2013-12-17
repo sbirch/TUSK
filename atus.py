@@ -143,6 +143,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 					return sql.Identifier(rewritten)
 			else:
 				#print dp, 'Leaving %r be' % parsed.value
+				pass
 			return sql.Identifier(parsed.value)
 	elif isinstance(parsed, sql.TokenList):
 		#print dp, 'token-list case', repr(parsed)
@@ -154,7 +155,10 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 					d=d+1)
 			else:
 				#print dp, 'Leaving %r in place' % tok
+				pass
 
+		return parsed
+	elif parsed.is_whitespace() or parsed.ttype == token.Wildcard:
 		return parsed
 	else:
 		raise Exception('Do not recognize: %r' % parsed)
