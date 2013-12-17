@@ -25,7 +25,7 @@ in the ATUS activity heirarchy.
 
 `make lexicon`
 
-*Note:* The activity lexicon is extracted programmatically and could contain
+**Note:** The activity lexicon is extracted programmatically and could contain
 errors. (Please file an issue!)
 
 The result is `activity-lexicon/activity_lexicon.json` which is a JSON file
@@ -54,7 +54,7 @@ descriptions, possible values, etc.)
 
 `make dictionary`
 
-*Note:* The data dictionary is extracted programmatically and could contain
+**Note:** The data dictionary is extracted programmatically and could contain
 errors. (Please file an issue!)
 
 The result is `data-dictionary/data_dictionary.json` which is a JSON file
@@ -87,8 +87,8 @@ The attributes are as follows:
 * `description`: the description of the variable;
 * `files`: a list of file names this variable will appear in (i.e. which tables in the database);
 * `note`: any note accompanying the variable, or null if no note is included.
-* `validEntries`: a map from value names to value descriptions. Descriptions are sometimes "Min value" and "Max value" for continuously coded fields. *Note*: values names are and should
-remains strings even if they represent integer values (in some cases a value of "1" is distinct from "01").
+* `validEntries`: a map from value names to value descriptions. Descriptions are sometimes "Min value" and "Max value" for continuously coded fields. Values names are and should
+remain strings even if they represent integer values (in some cases a value of "1" is distinct from "01").
 
 See the [CPS data dictionary 2003-2012](http://www.bls.gov/tus/atuscpscodebk0312.pdf)
 and [ATUS interview data dictionary 2003-2012](http://www.bls.gov/tus/atusintcodebk0312.pdf)
