@@ -61,6 +61,7 @@ Variables = {
 	'weekday_code': 'TUDIARYDAY',
 	'household_members': 'HRNUMHOU',
 	'weekly_earnings': '(TRERNWA/100.0)',
+	'weekly_overtime_earnings': '(TEERN/100.0)',
 	'friend_time': 'TRTFRIEND',
 	'family_time': 'TRTFAMILY',
 	'case_id': 'TUCASEID',

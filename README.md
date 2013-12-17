@@ -22,6 +22,8 @@ in the ATUS activity heirarchy.
 
 To download a lexicon: `make get-lexicon`
 
+(This is built from the [Activity Lexicon for 2003-2012](http://www.bls.gov/tus/lexiconnoex0312.pdf).)
+
 To build it yourself: `make lexicon`
 
 **Note:** The activity lexicon is extracted programmatically and could contain
@@ -51,6 +53,9 @@ descriptions, possible values, etc.)
 
 To download a dictionary: `make get-dictionary`
 
+(This is built from the [CPS data dictionary 2003-2012](http://www.bls.gov/tus/atuscpscodebk0312.pdf)
+and [ATUS interview data dictionary 2003-2012](http://www.bls.gov/tus/atusintcodebk0312.pdf).)
+
 To build it yourself: `make dictionary`
 
 **Note:** The data dictionary is extracted programmatically and could contain
@@ -62,21 +67,6 @@ is built from both the interview data dictionary and CPS data dictionary
 (in the case of duplication the interview version is kept.) For example:
 
 ```
-"TUELFREQ": {
-	"description": "How often did you provide this care?"
-	"files": ["Respondent File"],
-	"note": "Questions about eldercare were introduced in January 2011. Therefore, cases with [TUYEAR < 2011] will have missing values for TUELFREQ",
-	"validEntries": {
-		"1": "Daily",
-		"3": "About once a week",
-		"2": "Several times a week",
-		"5": "Once a month",
-		"4": "Several times a month",
-		"7": "Other",
-		"6": "One time"
-	}
-}
-
 "TELFS": {
 	"description": "Edited: labor force status",
 	"editedUniverse": "All respondents",
