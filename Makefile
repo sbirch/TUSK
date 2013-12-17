@@ -20,7 +20,7 @@ get-dictionary:
 dictionary:
 	@echo "Note: building the dictionary requires PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/), as well as copies of the data dictionaries (e.g. atuscpscodebk0312.pdf and atusintcodebk0312.pdf) in the data-dictionary directory."
 	# Extract the PDFs to PDFMiner XML files
-	cd data-dictionary; bash extract.sh;
+	cd data-dictionary; bash extract-xml.sh;
 	# Process the XML to build the data_dictionary.json
 	cd data-dictionary; python extract.py;
 	@echo "Built data-dictionary/data_dictionary.json.json"
