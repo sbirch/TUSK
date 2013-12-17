@@ -124,7 +124,9 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 			rewritten = variable_rewriter(parsed.value)
 			if parsed.value != rewritten:
 				#print dp, 'Rewriting result-cols %s => %s' % (parsed.value, variable_rewriter(parsed.value))
-				return sql.Identifier('%s AS %s' % (variable_rewriter(parsed.value), parsed.value))
+				
+				result_name = parsed.value.split('.')[-1]
+				return sql.Identifier('%s AS %s' % (variable_rewriter(parsed.value), result_name))
 			else:
 				#print dp, 'Leaving %r be' % parsed.value
 				return sql.Identifier(parsed.value)

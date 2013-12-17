@@ -64,7 +64,7 @@ Variables = {
 	'weekly_overtime_earnings': '(TEERN/100.0)',
 	'friend_time': 'TRTFRIEND',
 	'family_time': 'TRTFAMILY',
-	'case_id': 'TUCASEID',
+	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
 	# TODO: this is only the right name in the multi-year files
 	'person_weight': 'TUFNWGTP'
