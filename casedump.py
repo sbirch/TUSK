@@ -9,9 +9,6 @@ demographics = atus.db.get('select age, sex_code from roster where case_id=%s an
 demographics.update(atus.db.get('select region_code, race_code from cps where case_id=%s and lineno=1' % caseid))
 demographics.update(atus.db.get('select labor_status_code from respondents where case_id=%s' % caseid))
 
-
-# TODO: interpret function e.g. for sex below
-
 print '%dyo %r %s from the %s who is %r' % (
 	demographics['age'],
 	interpret(demographics, 'race_code'),
