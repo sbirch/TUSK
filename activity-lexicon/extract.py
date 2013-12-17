@@ -72,7 +72,7 @@ for i in range(1, lexicon.getNumPages()):
 
 codebook = {}
 for code in codemap:
-	k = ','.join([str(x) for x in code])
+	k = ''.join(['%02d'%x for x in code])
 	codebook[k] = codemap[code]
 
 json.dump(codebook, open('activity_lexicon.json', 'wb'))
