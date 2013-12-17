@@ -31,6 +31,10 @@ class ATUS:
 		return self.db[key]
 	def query(self, q):
 		return self.db.query(self.rewrite(q))
+	def get(self, q):
+		results = list(self.query(q))
+		assert len(results) == 1
+		return results[0]
 
 def find(L, f):
 	for i,l in enumerate(L):

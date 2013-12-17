@@ -76,6 +76,23 @@ is built from both the interview data dictionary and CPS data dictionary
 		"6": "One time"
 	}
 }
+
+"TELFS": {
+	"description": "Edited: labor force status",
+	"editedUniverse": "All respondents",
+	"files": ["Respondent File", "Activity Summary File"],
+	"validEntries": {
+		"1": "Employed - at work",
+		"2": "Employed - absent",
+		"3": "Unemployed - on layoff",
+		"4": "Unemployed - looking",
+		"5": "Not in labor force"
+	},
+	"note": null,
+	"document": "ATUS dictionary",
+	"pages": [15, 15]
+}
+
 ```
 
 Note that some descriptions (such as the above) benefit from the context of other
@@ -90,6 +107,7 @@ The attributes are as follows:
 remain strings even if they represent integer values (in some cases a value of "1" is distinct from "01").
 * `document`: which document this variable was originally defined in (if both, the one that the data was derived from: the interview data dictionary takes precedence.)
 * `pages`: a tuple of page numbers where the variable appears.
+* `editedUniverse`: the conditions under which the value of this variable is defined.
 
 See the [CPS data dictionary 2003-2012](http://www.bls.gov/tus/atuscpscodebk0312.pdf)
 and [ATUS interview data dictionary 2003-2012](http://www.bls.gov/tus/atusintcodebk0312.pdf)

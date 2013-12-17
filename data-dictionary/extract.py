@@ -76,31 +76,42 @@ def process_page(page, page_id=None):
     result_valid_entry_sets = []
     result_notes = []
 
-    for variable in variables:
+    for i, variable in enumerate(variables):
         #print variable
         first_description, first_file = textlines.v_aligned(variable).right(variable, bound=variable.right).by(lambda e: e.x)
-        
 
         next_landmark = landmarks.below(variable, bound=variable.bottom).by(lambda e: e.y)
         next_landmark_bound = next_landmark[0].y if len(next_landmark) > 0 else page_h
         next_landmark = next_landmark[0] if len(next_landmark) > 0 else None
 
+        # extend the files paragraph
         other_files = textlines.h_aligned(file_header).below(first_file).above(bound=next_landmark_bound) - next_landmark
 
         variable_files = first_file + other_files
         variable_files.tag('files')
 
+        # extend the description paragraph
         other_description = textlines.h_aligned(description_header).below(first_description).above(bound=next_landmark_bound) - next_landmark
 
         description = first_description + other_description
         description.tag('description')
+
+        # edited universe
+        edited_universe = textlines.below(variable).h_aligned(description_header).tagged('edited-universe').by(lambda e: e.y)
+        if i < len(variables)-1:
+            edited_universe = edited_universe.above(variables[i+1])
+        
+        if len(edited_universe) > 0:
+            edited_universe = edited_universe[:1]
+        else:
+            edited_universe = None
 
         #print '====', variable.text.strip(), '===='
         #print textlines_to_string(description)
         #print textlines_to_string(variable_files)
 
         result_variables.append(PageObject('variable', variable.y, (
-            variable, description, variable_files
+            variable, description, variable_files, edited_universe
         ), page_id))
     
     for valid_entry in valid_entries:
@@ -187,7 +198,7 @@ def main(dom, start_page=10, end_page=50, document=None):
         obj = objects[i]
         assert obj.type == 'variable'
 
-        var, description, files = obj.content
+        var, description, files, ed_uni = obj.content
         variable_name = var.text.strip()
 
         print '====', variable_name, '===='
@@ -215,7 +226,7 @@ def main(dom, start_page=10, end_page=50, document=None):
             variable_name,
             textlines_to_string(description),
             [x.strip() for x in textlines_to_string(files).split(',')],
-            None,
+            textlines_to_string(ed_uni) if ed_uni is not None else None,
             convert_valid_entries(items['valid-entries'].content) if items.has_key('valid-entries') else None,
             textlines_to_string(items['note'].content) if items.has_key('note') else None,
             obj.page_id
@@ -238,8 +249,7 @@ if __name__ == '__main__':
         return {k: {
             'description': v.description,
             'files': v.files,
-            # not presently extracted
-            #'edited_universe':
+            'editedUniverse': v.edited_universe[len('Edited Universe: '):] if v.edited_universe is not None and v.edited_universe.startswith('Edited Universe: ') else v.edited_universe,
             'validEntries': v.valid_entries,
             'note': v.note[len('* Note: '):] if v.note is not None and v.note.startswith('* Note: ') else v.note,
             'document': v.page_info[0],
