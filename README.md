@@ -11,9 +11,9 @@ Building the database
 The database stores all the information from the ATUS .dat (CSV) files in a
 SQLite database.
 
-`make get-db`
+To download a pre-made database (large!): `make get-db`
 
-`make db`
+To build a database: `make db`
 
 Building the activity lexicon
 ------------
@@ -21,9 +21,9 @@ Building the activity lexicon
 The activity lexicon contains information about activities and their place
 in the ATUS activity heirarchy.
 
-`make get-lexicon`
+To download a lexicon: `make get-lexicon`
 
-`make lexicon`
+To build it yourself: `make lexicon`
 
 **Note:** The activity lexicon is extracted programmatically and could contain
 errors. (Please file an issue!)
@@ -50,9 +50,9 @@ Building the data dictionary
 The data dictionary contains information about CPS and ATUS variables (their
 descriptions, possible values, etc.)
 
-`make get-dictionary`
+To download a dictionary: `make get-dictionary`
 
-`make dictionary`
+To build it yourself: `make dictionary`
 
 **Note:** The data dictionary is extracted programmatically and could contain
 errors. (Please file an issue!)
