@@ -29,10 +29,10 @@ class ATUS:
 		return getattr(self.db, attr)
 	def __getitem__(self, key):
 		return self.db[key]
-	def query(self, q):
-		return self.db.query(self.rewrite(q))
-	def get(self, q):
-		results = list(self.query(q))
+	def query(self, q, explain=False):
+		return self.db.query(('EXPLAIN ' if explain else '') + self.rewrite(q))
+	def get(self, q, explain=False):
+		results = list(self.query(q, explain=explain))
 		assert len(results) == 1
 		return results[0]
 

@@ -22,7 +22,10 @@ def count(alpha=0.95, **kwargs):
 	if kwargs.has_key('filters'):
 		filters = kwargs['filters']
 	
-	results = atus.db.query('EXPLAIN SELECT count(*) FROM respondents inner join roster on respondents.caseid=roster.caseid and roster.lineno=1 inner join cps on cps.caseid=roster.caseid and cps.lineno=1 where %s' % filters)
+	results = atus.db.query('''SELECT count(*) FROM respondents
+		inner join roster on respondents.caseid=roster.caseid and roster.lineno=1 inner join cps on cps.caseid=roster.caseid and cps.lineno=1
+		where %s''' % filters,
+		explain=True)
 
 	for r in results:
 		print r
