@@ -6,13 +6,13 @@ get-db:
 db:
 	cd db; python create_database.py
 
-get-codebook:
-	curl "https://gist.github.com/sbirch/7633008/raw" > activity-lexicon/codebook.json
+get-lexicon:
+	curl "https://gist.github.com/sbirch/7633008/raw" > activity-lexicon/activity_lexicon.json
 
-codebook:
+lexicon:
 	@echo "Note: building the lexicon requires pyPdf (https://pypi.python.org/pypi/pyPdf)."
 	cd activity-lexicon; python extract.py
-	@echo "Built activity-lexicon/codebook.json"
+	@echo "Built activity-lexicon/activity_lexicon.json"
 
 clean:
 	rm -i activity-lexicon/codebook.json

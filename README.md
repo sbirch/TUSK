@@ -8,13 +8,29 @@ with the BLS ATUS dataset.
 Building the database
 --------
 
+The database stores all the information from the ATUS .dat (CSV) files in a
+SQLite database.
+
 `make get-db`
 
 `make db`
 
-Building the codebook
+Building the activity lexicon
 ------------
 
-`make get-codebook`
+The activity lexicon contains information about activities and their place
+in the ATUS activity heirarchy.
 
-`make codebook`
+`make get-lexicon`
+
+`make lexicon`
+
+Building the data dictionary
+-------------
+
+The data dictionary contains information about CPS and ATUS variables (their
+descriptions, possible values, etc.)
+
+`make get-dictionary`
+
+`make dictionary`

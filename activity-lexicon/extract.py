@@ -75,4 +75,4 @@ for code in codemap:
 	k = ','.join([str(x) for x in code])
 	codebook[k] = codemap[code]
 
-json.dump(codebook, open('codebook.json', 'wb'))
+json.dump(codebook, open('activity_lexicon.json', 'wb'))
