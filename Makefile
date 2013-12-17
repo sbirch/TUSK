@@ -1,4 +1,4 @@
-.PHONY: get-db db get-codebook codebook clean
+.PHONY: get-db db get-lexicon lexicon get-dictionary dictionary clean
 
 get-db:
 	curl -L "https://www.dropbox.com/s/tdxy5xuzkdzyzxa/atus.db?dl=1" > db/atus.db
@@ -10,9 +10,20 @@ get-lexicon:
 	curl "https://gist.github.com/sbirch/7633008/raw" > activity-lexicon/activity_lexicon.json
 
 lexicon:
-	@echo "Note: building the lexicon requires pyPdf (https://pypi.python.org/pypi/pyPdf)."
+	@echo "Note: building the lexicon requires pyPdf (https://pypi.python.org/pypi/pyPdf), as well as a copy of the lexicon (e.g. lexiconnoex0312.pdf) in the activity-lexicon directory."
 	cd activity-lexicon; python extract.py
 	@echo "Built activity-lexicon/activity_lexicon.json"
+
+get-dictionary:
+	@echo "TODO"
+
+dictionary:
+	@echo "Note: building the dictionary requires PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/), as well as copies of the data dictionaries (e.g. atuscpscodebk0312.pdf and atusintcodebk0312.pdf) in the data-dictionary directory."
+	# Extract the PDFs to PDFMiner XML files
+	cd data-dictionary; bash extract.sh;
+	# Process the XML to build the data_dictionary.json
+	cd data-dictionary; python extract.py;
+	@echo "Built data-dictionary/data_dictionary.json.json"
 
 clean:
 	rm -i activity-lexicon/codebook.json
