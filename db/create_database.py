@@ -22,7 +22,7 @@ def declare_table(cur, column_types, table_name):
 	index_string = 'CREATE INDEX TUCASEID_INDEX_%s ON %s (`TUCASEID` ASC);' % (table_name, table_name)
 	cur.execute(index_string)
 
-def sniff_type(strings):
+def sniff_type(strings, column_name):
 	if all([x.isdigit() or (x[0]=='-' and x[1:].isdigit()) for x in strings]):
 		return 'INTEGER'
 	try:
@@ -44,7 +44,7 @@ def build_table(cur, conn, table_name, csv_reader):
 		if len(sniffed_data) >= 100:
 			break
 
-	data_types = {col: sniff_type(sniff[col]) for col in columns}
+	data_types = {col: sniff_type(sniff[col], col) for col in columns}
 
 	declare_table(cur, data_types, table_name)
 

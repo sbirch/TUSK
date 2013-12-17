@@ -22,7 +22,7 @@ class ATUS:
 		try:
 			return variables.Tables[table_ref]
 		except KeyError:
-			raise Exception('Could not find a table with the name %r'% table_ref)
+			return table_ref
 	def rewrite(self, q):
 		return rewrite(q, self._infer, self._variable_rewriter)
 	def __getattr__(self, attr):
@@ -46,8 +46,9 @@ def rewrite(sql, table_translator, variable_rewriter):
 
 	TODO:
 		error messaging
+		SQL placeholders
 	'''
-	print 'Rewriting:', sql
+	#print 'Rewriting:', sql
 	# TODO only handles the first statement
 	parsed = sqlparse.parse(sql)[0]
 	#print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
