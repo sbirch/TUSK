@@ -46,8 +46,6 @@ def rewrite(sql, table_translator, variable_rewriter):
 
 	TODO:
 		error messaging
-		GROUP BY, HAVING, ORDER BY
-		table.name
 	'''
 	print 'Rewriting:', sql
 	# TODO only handles the first statement

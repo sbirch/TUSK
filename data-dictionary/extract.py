@@ -33,9 +33,9 @@ def process_textbox(e, page):
 def textlines_to_string(textlines):
     return re.sub('\s+', ' ', ' '.join([box.text for box in textlines])).strip()
 
-PageObject = namedtuple('PageObject', ['type', 'y', 'content'])
+PageObject = namedtuple('PageObject', ['type', 'y', 'content', 'page_id'])
 
-def process_page(page):
+def process_page(page, page_id=None):
     page_w, page_h = page_wh(page)
 
     textlines = []
@@ -101,7 +101,7 @@ def process_page(page):
 
         result_variables.append(PageObject('variable', variable.y, (
             variable, description, variable_files
-        )))
+        ), page_id))
     
     for valid_entry in valid_entries:
         next_landmark = landmarks.below(bound=valid_entry.bottom).by(lambda e: e.y)
@@ -124,7 +124,7 @@ def process_page(page):
         #for row in rows:
         #    print row
 
-        result_valid_entry_sets.append(PageObject('valid-entries', valid_entry.y, rows))
+        result_valid_entry_sets.append(PageObject('valid-entries', valid_entry.y, rows, page_id))
 
     for note in notes:
         #print note
@@ -133,7 +133,7 @@ def process_page(page):
 
         note_lines = textlines.below(note).above(bound=next_landmark).untagged()
 
-        result_notes.append(PageObject('note', note.y, note + note_lines))
+        result_notes.append(PageObject('note', note.y, note + note_lines, page_id))
 
         
 
@@ -169,14 +169,15 @@ def convert_valid_entries(entries):
 # pages / page / textbox / textline / text
 # rect, layout, figure, textgroup
 
-Variable = namedtuple('Variable', ['name', 'description', 'files', 'edited_universe', 'valid_entries', 'note'])
+Variable = namedtuple('Variable', ['name', 'description', 'files', 'edited_universe', 'valid_entries', 'note', 'page_info'])
 
-def main(dom, start_page=10, end_page=50):
+def main(dom, start_page=10, end_page=50, document=None):
     objects = []
     for i,page in enumerate(child_elements(dom.firstChild)):
-        if start_page <= int(page.attributes['id'].value) <= end_page:
-            print 'Processing page', int(page.attributes['id'].value)
-            rvars, rvalid, rnotes = process_page(page)
+        page_number = int(page.attributes['id'].value)
+        if start_page <= page_number <= end_page:
+            print 'Processing page', page_number
+            rvars, rvalid, rnotes = process_page(page, page_id=(document, page_number, page_number))
             objects.extend(sorted(rvars + rvalid + rnotes, key=lambda po: po.y))
 
     variables = {}
@@ -204,7 +205,7 @@ def main(dom, start_page=10, end_page=50):
                 old = items[objects[k].type]
                 new = objects[k]
 
-                items[new.type] = PageObject(new.type, new.y, old.content + new.content)
+                items[new.type] = PageObject(new.type, new.y, old.content + new.content, old.page_id)
             else:
                 items[objects[k].type] = objects[k]
             k += 1
@@ -216,7 +217,8 @@ def main(dom, start_page=10, end_page=50):
             [x.strip() for x in textlines_to_string(files).split(',')],
             None,
             convert_valid_entries(items['valid-entries'].content) if items.has_key('valid-entries') else None,
-            textlines_to_string(items['note'].content) if items.has_key('note') else None
+            textlines_to_string(items['note'].content) if items.has_key('note') else None,
+            obj.page_id
         )
 
     
@@ -227,8 +229,8 @@ def main(dom, start_page=10, end_page=50):
     return variables
 
 if __name__ == '__main__':
-    cps_codes = main(parse('atuscpscodebk0312.xml'), start_page=10, end_page=50)
-    int_codes = main(parse('atusintcodebk0312.xml'), start_page=11, end_page=37)
+    cps_codes = main(parse('atuscpscodebk0312.xml'), start_page=10, end_page=50, document='CPS dictionary')
+    int_codes = main(parse('atusintcodebk0312.xml'), start_page=11, end_page=37, document='ATUS dictionary')
 
     import json
 
@@ -239,7 +241,9 @@ if __name__ == '__main__':
             # not presently extracted
             #'edited_universe':
             'validEntries': v.valid_entries,
-            'note': v.note[len('* Note: '):] if v.note is not None and v.note.startswith('* Note: ') else v.note
+            'note': v.note[len('* Note: '):] if v.note is not None and v.note.startswith('* Note: ') else v.note,
+            'document': v.page_info[0],
+            'pages': (v.page_info[1], v.page_info[2])
         } for k,v in vs.items()}
 
     #json.dump(convert(cps_codes), open('cps_codes.json', 'wb'))

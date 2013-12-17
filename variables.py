@@ -2,6 +2,9 @@ def interp_varname(varname):
 	first = varname[0]
 	second = varname[1]
 
+	#T - RT in ATUS vars
+	# TXAGE_EC 
+
 	if first == 't':
 		return (varname[1:], 'ATUS-interview', 'summary-file')
 	else:

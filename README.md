@@ -1,9 +1,8 @@
-ATUS
+ATUS: Technical Documentation
 ===========
 
 This is a repository of Sam Birch and Alex Leblang's work in Brown's CS195W
-with the BLS ATUS dataset.
-
+with the [BLS ATUS dataset](http://www.bls.gov/tus/).
 
 Building the database
 --------
@@ -89,6 +88,8 @@ The attributes are as follows:
 * `note`: any note accompanying the variable, or null if no note is included.
 * `validEntries`: a map from value names to value descriptions. Descriptions are sometimes "Min value" and "Max value" for continuously coded fields. Values names are and should
 remain strings even if they represent integer values (in some cases a value of "1" is distinct from "01").
+* `document`: which document this variable was originally defined in (if both, the one that the data was derived from: the interview data dictionary takes precedence.)
+* `pages`: a tuple of page numbers where the variable appears.
 
 See the [CPS data dictionary 2003-2012](http://www.bls.gov/tus/atuscpscodebk0312.pdf)
 and [ATUS interview data dictionary 2003-2012](http://www.bls.gov/tus/atusintcodebk0312.pdf)
