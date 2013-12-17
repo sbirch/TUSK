@@ -27,12 +27,17 @@ def weighted_groupby_sum():
 def activity_count(**kwargs):
 	query_string = ''
 	select_string = 'SELECT count(*)'
+	where_string = ''
 	from_tables = []
+	act_sum = False
 	for param in kwargs.keys():
 		if param == 'group_by':
 			group = variables.Variables[param['group_by']] if param['group_by'] in variables.Variables else param['group_by']
 			select_string = select_string + ', ' + group
-		
+		if param in variables.summary_variables:
+			act_sum = True
+		else:
+			pass
 
 	args
 	#return persondays
