@@ -116,6 +116,48 @@ Variables = {
 	'family_income': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
 	'education_code': 'PEEDUCA',
 	'activity_location_code': 'TEWHERE',
+	'duration': 'TUACTDUR',
+	'activity_number': 'TUACTIVITY_N',
+	'start_time': 'TUSTARTTIM',
+	'stop_time': 'TUSTOPTIME',
+	'start_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 0)'),
+	'stop_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 1)'),
+
+	# Selected meta-summaries
+	'minutes_working': 't050101+t050102',
+
+
+	# Selected summary time variables
+	'minutes_sleeping': 't010101',
+	'minutes_eating': 't110101',
+	'minutes_TV': 't120303',
+	'minutes_washing_and_dressing': 't010201',
+	'minutes_cooking': 't020201',
+	'minutes_socializing': 't120101',
+	'minutes_main_job': 't050101',
+	'minutes_travel_for_shopping': 't180782',
+	'minutes_commuting': 't180501',
+	'minutes_cleaning': 't020101',
+	'minutes_reading': 't120312',
+	'minutes_travel_for_food': 't181101',
+	'minutes_shopping': 't070104',
+	'minutes_cleaning_kitchen': 't020203',
+	'minutes_travel_for_socializing': 't181201',
+	'minutes_relaxing': 't120301',
+	'minutes_childcare': 't030101',
+	'minutes_laundry': 't020102',
+	'minutes_grocery_shopping': 't070101',
+	'minutes_going_to_grocery_store': 't180701',
+	'minutes_organizing': 't020902',
+	'minutes_petcare': 't020681',
+	'minutes_traveling_for_children': 't180381',
+	'minutes_lawncare': 't020501',
+	'minutes_computer_use': 't120308',
+	'minutes_pickup_children': 't030112',
+
+
+	# TODO: this is only the right name in the multi-year files
+	'weight': 'TUFNWGTP',
 
 	# activity codes are special cased
 	'activity_code': ('TRCODEP', 'normalize_activity_code(TRCODEP)'),
@@ -124,15 +166,7 @@ Variables = {
 	'activity': ('TRCODEP', 'decode_activity(TRCODEP)'),
 	'activity_tier1': ('TRTIER1P', 'decode_activity(TRTIER1P)'),
 	'activity_tier2': ('TRTIER2P', 'decode_activity(TRTIER2P)'),
-	'duration': 'TUACTDUR',
-	'activity_number': 'TUACTIVITY_N',
-	'start_time': 'TUSTARTTIM',
-	'stop_time': 'TUSTOPTIME',
-	'start_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 0)'),
-	'stop_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 1)'),
 
-	# TODO: this is only the right name in the multi-year files
-	'weight': 'TUFNWGTP'
 
 	# occupation
 }

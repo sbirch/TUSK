@@ -56,7 +56,7 @@ class ATUS:
 		results = list(self.query(q, explain=explain, verbose=verbose))
 		assert len(results) == 1
 		if len(results[0].keys()) == 1:
-			return results[results[0].keys()[0]]
+			return results[0][results[0].keys()[0]]
 		return results[0]
 
 def find(L, f):
