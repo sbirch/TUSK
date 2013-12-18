@@ -33,8 +33,8 @@ def count(alpha=0.95, **kwargs):
 if __name__ == '__main__':
 
 	import sqlite3
-	query = 'select TUCASEID from atusrost_0312'
-	query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where TEAGE=21 and TESEX=2;'
+	query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where (TESEX=2 and TEAGE=21)'
+	#query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where TEAGE=21 or TESEX=2;'
 	conn = sqlite3.connect('db/atus.db')
 
 	print conn
