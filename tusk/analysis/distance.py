@@ -7,7 +7,7 @@ import math
 import functools32
 from collections import Counter
 
-random_cases = [x['caseid'] for x in atus.db.query('select caseid from respondents order by random() limit 500')]
+random_cases = [x['caseid'] for x in atus.db.query('select respondents.caseid from respondents inner join summary on respondents.caseid=summary.caseid where minutes_working>120 order by random() limit 500')]
 
 '''
 random_cases = [20031009031805, 20110505111101, 20120302121318, 20030504033191,
@@ -99,6 +99,29 @@ def case_distance_2(c1, c2):
 	d2 = get_case_data_2(c2)
 	return np.sum( (d1-d2)**2 )
 
+def color_day(case):
+	weekday = atus.db.get('''select weekday from respondents where caseid=%d''' % case)
+	if weekday.lower() in ['saturday', 'sunday']:
+		return plt.cm.winter(0.0)
+	return plt.cm.winter(1.0)
+
+def color_work(case):
+	mins = atus.db.get('''select minutes_working from summary where caseid=%d''' % case)
+	if mins < 120:
+		return plt.cm.winter(0.0)
+	return plt.cm.winter(1.0)
+
+def look(case):
+	marker = 'o'
+	weekday = atus.db.get('''select weekday from respondents where caseid=%d''' % case)
+	if weekday.lower() in ['saturday', 'sunday']:
+		marker = 'v'
+
+	#mins = atus.db.get('''select minutes_working from summary where caseid=%d''' % case)
+	income_code = atus.db.get('''select family_income_code from cps where caseid=%d and lineno=1''' % case)
+
+	return 40, marker, plt.cm.Greys(1.0 - (income_code/16.0))
+
 np.set_printoptions(precision=2)
 
 case_vectors = []
@@ -115,21 +138,9 @@ dists = scipy.spatial.distance.squareform(dists)
 mds = manifold.MDS(2, dissimilarity="precomputed")
 Y = mds.fit_transform(dists)
 
-def color_day(case):
-	weekday = atus.db.get('''select weekday from respondents where caseid=%d''' % case)
-	if weekday.lower() in ['saturday', 'sunday']:
-		return 0.0
-	return 1.0
-
-def color_work(case):
-	mins = atus.db.get('''select minutes_working from summary where caseid=%d''' % case)
-	if mins < 60:
-		return 0.0
-	return 1.0
-
-
 for i in xrange(len(Y)):
-	plt.scatter(Y[i, 0], Y[i, 1], c=plt.cm.Greys(color_work(case_vectors[i])))
+	size, marker, color = look(case_vectors[i])
+	plt.scatter(Y[i, 0], Y[i, 1], c=color, s=size, marker=marker)
 plt.title("MDS embedding")
 
 plt.show()
