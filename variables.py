@@ -83,7 +83,7 @@ Variables = {
 	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
 	# TODO: this is only the right name in the multi-year files
-	'person_weight': 'TUFNWGTP'
+	'weight': 'TUFNWGTP'
 
 	# occupation
 	# household income
