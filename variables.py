@@ -45,10 +45,18 @@ def interpret_code(variable, value):
 def interpret(d, k):
 	return interpret_code(k, d[k])
 
+# A SQLite UDF
 def sql_decode(original_name, value):
 	return interpret_code(original_name, value)
 
-# TODO: sql_ functions, sqlagg_ functions interp in SQL vars, var extraction not right
+# A SQLite aggregator
+class SQL_collect:
+    def __init__(self):
+        self.collected = []
+    def step(self, value):
+        self.collected.append(value)
+    def finalize(self):
+        return json.dumps(self.collected)
 
 # A map from alias to (variable, expression)
 # If not a tuple, assumed that variable and expression are the same, for

@@ -24,6 +24,9 @@ class ATUS:
 					# n.b. sql_ functions can only have normal style arguments,
 					# no funny business.
 					dbapi_con.create_function(obj[4:], len(inspect.getargspec(f).args), f)
+				elif obj.startswith('SQL_'):
+					f = getattr(variables, obj)
+					dbapi_con.create_aggregate(obj[4:], len(inspect.getargspec(f.step).args)-1, f)
 		sqlalchemy.event.listen(self.db.engine, 'connect', _hook)
 	def _variable_rewriter(self, mv):
 		table = ''
