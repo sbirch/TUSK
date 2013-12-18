@@ -199,18 +199,29 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 		return parsed
 
 db = ATUS(dataset.connect('sqlite:///%s' % os.path.join(__path__[0], 'db/atus.db')))
+displayed_rows = 5
 
 if __name__ == '__main__':
 	while True:
 		query = raw_input('> ')
 		if query.strip().lower() in ['.quit', 'quit']:
 			break
+		if query.strip().lower().split()[0] in ['.set']:
+			set_command = query.lower().split()
+			try:
+				display_index = set_command.index('displayed_rows')
+				displayed_rows = int(set_command[display_index + 1])
+				print 'displayed_rows = ', str(displayed_rows)
+			except:
+				print 'You did not provide a valid variable to set'
+				continue
+			continue
 		try:
 			k = 0
 			for row in db.query(query):
 				print row
 				k += 1
-				if k > 5:
+				if k >= displayed_rows:
 					break
 		except:
 			print traceback.print_exc()
