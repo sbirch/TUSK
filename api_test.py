@@ -22,16 +22,33 @@ def count(alpha=0.95, **kwargs):
 	if kwargs.has_key('filters'):
 		filters = kwargs['filters']
 	
-	results = atus.db.query('''SELECT count(*) FROM respondents
+	results = atus.db.query('''SELECT weight FROM respondents
 		inner join roster on respondents.caseid=roster.caseid and roster.lineno=1 inner join cps on cps.caseid=roster.caseid and cps.lineno=1
-		where %s''' % filters, verbose=True)
+		where %s;''' % filters, verbose=True)
 
 	for r in results:
 		print r
 		break
 
 if __name__ == '__main__':
-	count(filters='age=21 or sex_code=2')
+
+	import sqlite3
+	query = 'select TUCASEID from atusrost_0312'
+	query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where TEAGE=21 and TESEX=2;'
+	conn = sqlite3.connect('db/atus.db')
+
+	print conn
+	def move():
+		sys.stdout.write('.')
+		sys.stdout.flush()
+	conn.set_progress_handler(move, 10000)
+
+	for result in conn.execute(query):
+		continue
+
+	print
+
+	#count(filters='age=21 and sex_code=2')
 	sys.exit(0)
 
 
