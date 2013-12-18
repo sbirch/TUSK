@@ -194,30 +194,6 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 db = ATUS(dataset.connect('sqlite:///db/atus.db'))
 
 if __name__ == '__main__':
-
-	'''
-	print '-'* 40
-	print db.rewrite('select age from respondents LEFT JOIN summary as activities ORDER BY age')
-
-	print '-'* 40
-	print db.rewrite('select year from respondents, activities where age=22')
-	
-	print '-'* 40
-	print db.rewrite('select TRCODEP from activities where age<18;')
-	
-	
-	print '-'* 40
-	print db.rewrite('select count(*) from respondents where year=2010')
-	
-	print '-'* 40
-	print db.rewrite('SELECT DISTINCT age from respondents')
-	print '-'* 40
-	print db.rewrite('select age, avg(family_time) from respondents, summary where respondents.case_id = summary.case_id and number_children <= 0 GROUP BY age;')
-	print '-'* 40
-	print db.rewrite('select age, avg(weekly_earnings) from respondents, summary where respondents.case_id = summary.case_id GROUP BY age;')
-
-	
-	'''
 	while True:
 		query = raw_input('> ')
 		if query.strip().lower() in ['.quit', 'quit']:
