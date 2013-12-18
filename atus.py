@@ -6,33 +6,47 @@ import sqlparse.tokens as token
 import traceback
 import variables
 import sys
+import re
+import sqlalchemy
+import sqlite3
+import inspect
 
 class ATUS:
 	def __init__(self, db):
 		self.db = db
+
+		# TODO: this is an enormous SQLite-specific hack
+		def _hook(dbapi_con, con_record):
+			assert isinstance(dbapi_con, sqlite3.Connection)
+			for obj in dir(variables):
+				if obj.startswith('sql_'):
+					f = getattr(variables, obj)
+					# n.b. sql_ functions can only have normal style arguments,
+					# no funny business.
+					dbapi_con.create_function(obj[4:], len(inspect.getargspec(f).args), f)
+		sqlalchemy.event.listen(self.db.engine, 'connect', _hook)
 	def _variable_rewriter(self, mv):
 		table = ''
 		if mv.count('.') == 1:
 			table, mv = mv.split('.', 1)
 			table = self._infer(table) + '.'
-		if mv in variables.Variables:
-			mv = variables.Variables[mv]
+		mv = variables.rewrite(mv)
 		return table + mv
 	def _infer(self, table_ref):
 		try:
 			return variables.Tables[table_ref]
 		except KeyError:
 			return table_ref
-	def rewrite(self, q):
-		return rewrite(q, self._infer, self._variable_rewriter)
+	def rewrite(self, q, verbose=False):
+		return rewrite(q, self._infer, self._variable_rewriter, verbose=verbose)
 	def __getattr__(self, attr):
 		return getattr(self.db, attr)
 	def __getitem__(self, key):
 		return self.db[key]
-	def query(self, q, explain=False):
-		return self.db.query(('EXPLAIN ' if explain else '') + self.rewrite(q))
-	def get(self, q, explain=False):
-		results = list(self.query(q, explain=explain))
+	def query(self, q, explain=False, verbose=False):
+		return self.db.query(('EXPLAIN ' if explain else '') + self.rewrite(q, verbose=verbose))
+	def get(self, q, explain=False, verbose=False):
+		results = list(self.query(q, explain=explain, verbose=verbose))
 		assert len(results) == 1
 		return results[0]
 
@@ -42,7 +56,7 @@ def find(L, f):
 			return i
 	return None
 
-def rewrite(sql, table_translator, variable_rewriter):
+def rewrite(sql, table_translator, variable_rewriter, verbose=False):
 	'''
 	Rewrite a SQL statement with the given table translator and
 	variable rewriter. Handles SELECT statements with arbitrary
@@ -52,12 +66,16 @@ def rewrite(sql, table_translator, variable_rewriter):
 		error messaging
 		SQL placeholders
 	'''
-	#print 'Rewriting:', sql
+	if verbose:
+		print 'Rewriting:', re.sub('\s+', ' ', sql)
 	# TODO only handles the first statement
 	parsed = sqlparse.parse(sql)[0]
 	#print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
 	new_tree = _rewrite_parse_tree(parsed, table_translator, variable_rewriter)
-	return new_tree.to_unicode()
+	new_query = new_tree.to_unicode()
+	if verbose:
+		print 'Rewritten:', re.sub('\s+', ' ', new_query)
+	return new_query
 
 def is_base_identifier(t):
 	return isinstance(t, sql.Identifier) or t.ttype in [token.Keyword, token.Name]
@@ -165,7 +183,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 				pass
 
 		return parsed
-	elif parsed.is_whitespace() or parsed.ttype == token.Wildcard:
+	elif parsed.is_whitespace() or parsed.ttype == token.Wildcard or (parsed.ttype == token.Punctuation and parsed.value == ';'):
 		return parsed
 	else:
 		raise Exception('Do not recognize: %r' % parsed)
