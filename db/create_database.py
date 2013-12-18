@@ -70,7 +70,7 @@ def build_table(cur, conn, table_name, csv_reader):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Locate input files')
 	parser.add_argument('-z', '--zipfile-location', dest='path',
-		default='~/Dropbox/ATUS-195W/data/test_zip/',
+		default='~/Dropbox/ATUS-195W/data/bigboy/',
 		help='The location of the zipfiles with the ATUS data')
 	args = parser.parse_args()
 	arg_dict = vars(args)
