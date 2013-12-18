@@ -1,4 +1,5 @@
-import json
+from tusk import __path__
+import json, os
 
 def interp_varname(varname):
 	first = varname[0]
@@ -24,8 +25,8 @@ def interp_varname(varname):
 		}
 		return (varname[2:], fl_types[first], sl_types[second])
 
-DICTIONARY = json.load(open('data-dictionary/data_dictionary.json', 'rb'))
-LEXICON = json.load(open('activity-lexicon/activity_lexicon.json', 'rb'))
+DICTIONARY = json.load(open(os.path.join(__path__[0], 'data-dictionary/data_dictionary.json'), 'rb'))
+LEXICON = json.load(open(os.path.join(__path__[0], 'activity-lexicon/activity_lexicon.json'), 'rb'))
 
 def interpret_code(variable, value):
 	if variable not in DICTIONARY and variable in Variables:
@@ -50,10 +51,26 @@ def interpret(d, k):
 def sql_decode(original_name, value):
 	return interpret_code(original_name, value)
 
+def sql_normalize_activity_code(acode):
+	acode = str(acode)
+	code_size = len(acode)
+	return acode.rjust(code_size+1 if code_size%2 == 1 else code_size, '0')
+
 def sql_decode_activity(activity_code):
-	activity_code = str(activity_code)
-	code_size = len(activity_code)
-	return LEXICON.get(activity_code.rjust(code_size+1 if code_size%2 == 1 else code_size, '0'), 'unknown activity code %s' % activity_code)
+	activity_code = sql_normalize_activity_code(activity_code)
+	return LEXICON.get(activity_code, 'unknown activity code %s' % activity_code)
+
+def sql_parsetime(tstring):
+	'''19:51:00 => ATUS minute offset (starts at 4am). Does NOT account for overrun.'''
+	hours, minutes, seconds = tstring.split(':')
+	return (int(hours)-4)*60 + int(minutes)
+
+def sql_time2minute(tstart, tstop, which):
+	tstart = sql_parsetime(tstart)
+	tstop = sql_parsetime(tstop)
+	if tstop < tstart:
+		tstop += 1440
+	return [tstart, tstop][which]
 
 # A SQLite aggregator
 class SQL_collect:
@@ -99,21 +116,57 @@ Variables = {
 	'family_income': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
 	'education_code': 'PEEDUCA',
 	'activity_location_code': 'TEWHERE',
-
-	# activity codes are special cased
-	'activity_code': 'TRCODEP',
-	'activity_tier1_code': 'TRTIER1P',
-	'activity_tier2_code': 'TRTIER2P',
-	'activity': ('TRCODEP', 'decode_activity(TRCODEP)'),
-	'activity_tier1': ('TRTIER1P', 'decode_activity(TRTIER1P)'),
-	'activity_tier2': ('TRTIER2P', 'decode_activity(TRTIER2P)'),
 	'duration': 'TUACTDUR',
 	'activity_number': 'TUACTIVITY_N',
 	'start_time': 'TUSTARTTIM',
 	'stop_time': 'TUSTOPTIME',
+	'start_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 0)'),
+	'stop_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 1)'),
+
+	# Selected meta-summaries
+	'minutes_working': 't050101+t050102',
+
+
+	# Selected summary time variables
+	'minutes_sleeping': 't010101',
+	'minutes_eating': 't110101',
+	'minutes_TV': 't120303',
+	'minutes_washing_and_dressing': 't010201',
+	'minutes_cooking': 't020201',
+	'minutes_socializing': 't120101',
+	'minutes_main_job': 't050101',
+	'minutes_travel_for_shopping': 't180782',
+	'minutes_commuting': 't180501',
+	'minutes_cleaning': 't020101',
+	'minutes_reading': 't120312',
+	'minutes_travel_for_food': 't181101',
+	'minutes_shopping': 't070104',
+	'minutes_cleaning_kitchen': 't020203',
+	'minutes_travel_for_socializing': 't181201',
+	'minutes_relaxing': 't120301',
+	'minutes_childcare': 't030101',
+	'minutes_laundry': 't020102',
+	'minutes_grocery_shopping': 't070101',
+	'minutes_going_to_grocery_store': 't180701',
+	'minutes_organizing': 't020902',
+	'minutes_petcare': 't020681',
+	'minutes_traveling_for_children': 't180381',
+	'minutes_lawncare': 't020501',
+	'minutes_computer_use': 't120308',
+	'minutes_pickup_children': 't030112',
+
 
 	# TODO: this is only the right name in the multi-year files
-	'weight': 'TUFNWGTP'
+	'weight': 'TUFNWGTP',
+
+	# activity codes are special cased
+	'activity_code': ('TRCODEP', 'normalize_activity_code(TRCODEP)'),
+	'activity_tier1_code': 'normalize_activity_code(TRTIER1P)',
+	'activity_tier2_code': 'normalize_activity_code(TRTIER2P)',
+	'activity': ('TRCODEP', 'decode_activity(TRCODEP)'),
+	'activity_tier1': ('TRTIER1P', 'decode_activity(TRTIER1P)'),
+	'activity_tier2': ('TRTIER2P', 'decode_activity(TRTIER2P)'),
+
 
 	# occupation
 }
