@@ -25,6 +25,7 @@ def interp_varname(varname):
 		return (varname[2:], fl_types[first], sl_types[second])
 
 DICTIONARY = json.load(open('data-dictionary/data_dictionary.json', 'rb'))
+LEXICON = json.load(open('activity-lexicon/activity_lexicon.json', 'rb'))
 
 def interpret_code(variable, value):
 	if variable not in DICTIONARY and variable in Variables:
@@ -49,6 +50,11 @@ def interpret(d, k):
 def sql_decode(original_name, value):
 	return interpret_code(original_name, value)
 
+def sql_decode_activity(activity_code):
+	activity_code = str(activity_code)
+	code_size = len(activity_code)
+	return LEXICON.get(activity_code.rjust(code_size+1 if code_size%2 == 1 else code_size, '0'), 'unknown activity code %s' % activity_code)
+
 # A SQLite aggregator
 class SQL_collect:
     def __init__(self):
@@ -57,6 +63,13 @@ class SQL_collect:
         self.collected.append(value)
     def finalize(self):
         return json.dumps(self.collected)
+
+def sql_family_income(hufaminc, hefaminc, year):
+	if year > 2009:
+		# note that HEFAMINC is interpreted like HUFAMINC because the
+		# codes are the same and only listed in full for HUFAMINC
+		return interpret_code('HUFAMINC', hefaminc)
+	return interpret_code('HUFAMINC', hufaminc)
 
 # A map from alias to (variable, expression)
 # If not a tuple, assumed that variable and expression are the same, for
@@ -82,12 +95,27 @@ Variables = {
 	'family_time': 'TRTFAMILY',
 	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
+	'relation_code': 'TERRP',
+	'family_income': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
+	'education_code': 'PEEDUCA',
+	'activity_location_code': 'TEWHERE',
+
+	# activity codes are special cased
+	'activity_code': 'TRCODEP',
+	'activity_tier1_code': 'TRTIER1P',
+	'activity_tier2_code': 'TRTIER2P',
+	'activity': ('TRCODEP', 'decode_activity(TRCODEP)'),
+	'activity_tier1': ('TRTIER1P', 'decode_activity(TRTIER1P)'),
+	'activity_tier2': ('TRTIER2P', 'decode_activity(TRTIER2P)'),
+	'duration': 'TUACTDUR',
+	'activity_number': 'TUACTIVITY_N',
+	'start_time': 'TUSTARTTIM',
+	'stop_time': 'TUSTOPTIME',
+
 	# TODO: this is only the right name in the multi-year files
-	'weight': 'TUFNWGTP',
-	'relation_code': 'TERRP'
+	'weight': 'TUFNWGTP'
 
 	# occupation
-	# household income
 }
 
 # If aliases go to a single string, assume that it's the variable
@@ -98,7 +126,9 @@ for aliased in Variables:
 
 # Automatically add decoded versions of _code variables
 for aliased, (var, expr) in Variables.items():
-	if aliased.endswith('_code'):
+	if aliased in ['activity_code', 'activity_tier1_code', 'activity_tier2_code']:
+		continue
+	elif aliased.endswith('_code'):
 		Variables[aliased[:-len('_code')]] = (var, "decode('%s', %s)" % (var, expr))
 
 def rewrite(original_name):
