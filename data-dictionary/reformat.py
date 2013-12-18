@@ -64,7 +64,7 @@ for variable in order:
 		'%s p.%d' % (entry['document'], entry['pages'][0]),
 		entry['description'],
 		', '.join(entry['files']),
-		'<div class="eduni"><span>Edited universe: </span>%s</div>' % entry['editedUniverse'] if entry['editedUniverse'] is not None else None,
+		'<div class="eduni"><span>Edited universe: </span>%s</div>' % entry['editedUniverse'] if entry['editedUniverse'] is not None else '',
 		values,
 		'' if entry['note'] is None else '<div class="note"><span>Note: </span>%s</div>' % re.sub('(\s|\(|\[)([GHPT][UERT][A-Z0-9_]{1,12})', r'\1<a class="crossref" href="#\2">\2</a>', entry['note'])
 		)

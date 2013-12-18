@@ -48,8 +48,10 @@ if __name__ == '__main__':
 		sys.stdout.flush()
 	conn.set_progress_handler(move, 10000)
 
-	for result in conn.execute(query):
-		continue
+	results = conn.execute(query)
+
+	#for result in results:
+	#	continue
 
 	print
 	
