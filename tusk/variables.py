@@ -83,10 +83,8 @@ class SQL_collect:
 
 def sql_family_income(hufaminc, hefaminc, year):
 	if year > 2009:
-		# note that HEFAMINC is interpreted like HUFAMINC because the
-		# codes are the same and only listed in full for HUFAMINC
-		return interpret_code('HUFAMINC', hefaminc)
-	return interpret_code('HUFAMINC', hufaminc)
+		return hefaminc
+	return hufaminc
 
 # A map from alias to (variable, expression)
 # If not a tuple, assumed that variable and expression are the same, for
@@ -113,7 +111,10 @@ Variables = {
 	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
 	'relation_code': 'TERRP',
-	'family_income': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
+	'family_income_code': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
+	# note that HEFAMINC is interpreted like HUFAMINC because the
+	# codes are the same and only listed in full for HUFAMINC
+	'family_income': (None, "decode('HUFAMINC', family_income(HUFAMINC, HEFAMINC, HRYEAR4))"),
 	'education_code': 'PEEDUCA',
 	'activity_location_code': 'TEWHERE',
 	'duration': 'TUACTDUR',
@@ -179,7 +180,12 @@ for aliased in Variables:
 
 # Automatically add decoded versions of _code variables
 for aliased, (var, expr) in Variables.items():
-	if aliased in ['activity_code', 'activity_tier1_code', 'activity_tier2_code']:
+	if aliased in [
+			'activity_code',
+			'activity_tier1_code',
+			'activity_tier2_code',
+			'family_income_code'
+		]:
 		continue
 	elif aliased.endswith('_code'):
 		Variables[aliased[:-len('_code')]] = (var, "decode('%s', %s)" % (var, expr))
