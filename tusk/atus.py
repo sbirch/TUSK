@@ -1,3 +1,4 @@
+from tusk import __path__
 import dataset
 import readline
 import sqlparse
@@ -7,6 +8,7 @@ import traceback
 import variables
 import sys
 import re
+import os
 import sqlalchemy
 import sqlite3
 import inspect
@@ -45,12 +47,16 @@ class ATUS:
 	def __getattr__(self, attr):
 		return getattr(self.db, attr)
 	def __getitem__(self, key):
+		if not self.db.engine.has_table(key) and self.db.engine.has_table(self._infer(key)):
+			key = self._infer(key)
 		return self.db[key]
 	def query(self, q, explain=False, verbose=False):
 		return self.db.query(('EXPLAIN ' if explain else '') + self.rewrite(q, verbose=verbose))
 	def get(self, q, explain=False, verbose=False):
 		results = list(self.query(q, explain=explain, verbose=verbose))
 		assert len(results) == 1
+		if len(results[0].keys()) == 1:
+			return results[results[0].keys()[0]]
 		return results[0]
 
 def find(L, f):
@@ -186,12 +192,13 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 				pass
 
 		return parsed
-	elif parsed.is_whitespace() or parsed.ttype == token.Wildcard or (parsed.ttype == token.Punctuation and parsed.value == ';'):
-		return parsed
+	#elif parsed.is_whitespace() or parsed.ttype == token.Wildcard or (parsed.ttype == token.Punctuation and parsed.value == ';'):
+	#	return parsed
 	else:
-		raise Exception('Do not recognize: %r' % parsed)
+		#raise Exception('Do not recognize: %r' % parsed)
+		return parsed
 
-db = ATUS(dataset.connect('sqlite:///db/atus.db'))
+db = ATUS(dataset.connect('sqlite:///%s' % os.path.join(__path__[0], 'db/atus.db')))
 
 if __name__ == '__main__':
 	while True:
