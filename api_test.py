@@ -12,7 +12,7 @@ How to get uncertainty on normalized proportions from uncertain part/whole?
 Evaluate confidence bounds by estimating state populations
 '''
 
-Count = namedtuple('Count', ['minutes', 'variance', 'interval', 'cases'])
+Count = namedtuple('Count', ['people', 'count', 'cases'])
 
 def count(alpha=0.95, **kwargs):
 	'''Count the number of respondents matching a given set of filters; returns
@@ -22,19 +22,24 @@ def count(alpha=0.95, **kwargs):
 	if kwargs.has_key('filters'):
 		filters = kwargs['filters']
 	
-	results = atus.db.query('''SELECT weight FROM respondents
+	results = atus.db.query('''SELECT roster.caseid, weight FROM respondents
 		inner join roster on respondents.caseid=roster.caseid and roster.lineno=1 inner join cps on cps.caseid=roster.caseid and cps.lineno=1
-		where %s;''' % filters, verbose=True)
+		where %s;''' % filters)
 
-	for r in results:
-		print r
-		break
+	results = list(results)
+	
+	return Count(
+		sum([x['weight'] for x in results]) / len(results),
+		len(results),
+		[x['caseid'] for x in results]
+	)
 
 if __name__ == '__main__':
 
+	
 	import sqlite3
-	query = 'select TUCASEID from atusrost_0312'
-	query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where TEAGE=21 and TESEX=2;'
+	query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where (atusrost_0312.TESEX=2 and atusrost_0312.TEAGE=21)'
+	#query = 'SELECT TUFNWGTP AS weight FROM atusresp_0312 inner join atusrost_0312 on atusresp_0312.TUCASEID=atusrost_0312.TUCASEID and atusrost_0312.TULINENO=1 inner join atuscps_0312 on atuscps_0312.TUCASEID=atusrost_0312.TUCASEID and atuscps_0312.TULINENO=1 where TEAGE=21 or TESEX=2;'
 	conn = sqlite3.connect('db/atus.db')
 
 	print conn
@@ -47,8 +52,9 @@ if __name__ == '__main__':
 		continue
 
 	print
+	
 
-	#count(filters='age=21 and sex_code=2')
+	#print count(filters='age>=80 and sex_code=1 and year=2010')
 	sys.exit(0)
 
 
