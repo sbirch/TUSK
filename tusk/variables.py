@@ -124,6 +124,7 @@ Variables = {
 	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
 	'relation_code': 'TERRP',
+	'household_children': 'TRCHILDNUM',
 	'family_income_code': (
 		['HUFAMINC', 'HEFAMINC', 'HRYEAR4'],
 		'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
