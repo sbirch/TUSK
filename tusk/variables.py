@@ -84,6 +84,16 @@ class SQL_collect:
     def finalize(self):
         return json.dumps(self.collected)
 
+class SQL_weighted_avg:
+    def __init__(self):
+        self.sum = 0.0
+        self.normalized = 0.0
+    def step(self, value, weight):
+        self.sum += value
+        self.normalized += weight
+    def finalize(self):
+        return self.sum / self.normalized
+
 def sql_family_income(hufaminc, hefaminc, year):
 	if year > 2009:
 		return hefaminc
