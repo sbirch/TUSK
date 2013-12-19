@@ -1,13 +1,18 @@
 from tusk import atus, variables
-import matplotlib.pyplot as plt
+
+
+result = atus.db.query('''SELECT age, weighted_avg(family_time, respondents.weight) FROM respondent_link(respondents, summary, cps) GROUP BY age;''')	
 
 ages = []
 ft = []
-for r in atus.db.query('''SELECT
-	age, weighted_avg(family_time, respondents.weight)
-	FROM respondent_link(respondents, summary, cps) where PRNMCHLD=0 GROUP BY age;'''):
+for r in result:
 	ages.append(r['age'])
 	ft.append(r['TUFNWGTP)'])
-plt.plot(ages, ft)
+	#print r
+	print '%s,%s' % (r['age'], r['TUFNWGTP)'])
 
+'''
+import matplotlib.pyplot as plt
+plt.plot(ages, ft)
 plt.show()
+'''
