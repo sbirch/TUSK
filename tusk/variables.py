@@ -69,8 +69,10 @@ def sql_parsetime(tstring):
 def sql_time2minute(tstart, tstop, which):
 	tstart = sql_parsetime(tstart)
 	tstop = sql_parsetime(tstop)
-	if tstop < tstart:
+	if tstop < 0:
 		tstop += 1440
+	if tstart < 0:
+		tstart += 1440
 	return [tstart, tstop][which]
 
 # A SQLite aggregator
