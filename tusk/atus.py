@@ -245,9 +245,10 @@ if __name__ == '__main__':
 				display_index = set_command.index('displayed_rows')
 				displayed_rows = int(set_command[display_index + 1])
 				print 'displayed_rows = ', str(displayed_rows)
+				continue
 			except:
 				print 'You did not provide a valid variable to set'
-				continue
+			continue
 		if query.startswith('.lookup'):
 			var = query.split(' ', 1)[1]
 			print var
