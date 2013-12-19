@@ -273,6 +273,10 @@ if __name__ == '__main__':
 			print 'All tables for inputs:', ', '.join(requirements)
 
 			continue
+		if query.startswith('.rewrite'):
+			q = query.split(' ', 1)[1]
+			print db.rewrite(q)
+			continue
 		try:
 			k = 0
 			for row in db.query(query):
