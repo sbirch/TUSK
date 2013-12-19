@@ -215,6 +215,29 @@ if __name__ == '__main__':
 			except:
 				print 'You did not provide a valid variable to set'
 				continue
+		if query.startswith('.lookup'):
+			var = query.split(' ', 1)[1]
+			print var
+			print '='*len(var)
+
+			if var in variables.Variables:
+				print 'Aliases to expression:', variables.Variables[var][1]
+				print 'Taking inputs:', ', '.join(variables.Variables[var][0])
+				inputs = variables.Variables[var][0]
+			else:
+				inputs = [var]
+
+			requirements = set()
+			for var in inputs:
+				listed_in = []
+				for alias in variables.Tables:
+					if var in db[variables.Tables[alias]].columns:
+						listed_in.append(alias)
+				print '%s in:' % var, ', '.join(['%s (%s)' % (t, variables.Tables[t]) for t in listed_in])
+				requirements |= set(listed_in)
+
+			print 'All tables for inputs:', ', '.join(requirements)
+
 			continue
 		try:
 			k = 0

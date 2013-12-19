@@ -30,7 +30,8 @@ LEXICON = json.load(open(os.path.join(__path__[0], 'activity-lexicon/activity_le
 
 def interpret_code(variable, value):
 	if variable not in DICTIONARY and variable in Variables:
-		variable = Variables[variable][0]
+		# use the first entry as the decoder
+		variable = Variables[variable][0][0]
 	try:
 		metadata = DICTIONARY[variable]
 		if metadata["validEntries"].has_key(str(value)):
@@ -104,25 +105,33 @@ Variables = {
 	'cps_month': 'HRMONTH',
 	'weekday_code': 'TUDIARYDAY',
 	'household_members': 'HRNUMHOU',
-	'weekly_earnings': ('TRERNWA', '(TRERNWA/100.0)'),
-	'weekly_overtime_earnings': ('TEERN', '(TEERN/100.0)'),
+	'weekly_earnings': (['TRERNWA'], '(TRERNWA/100.0)'),
+	'weekly_overtime_earnings': (['TEERN'], '(TEERN/100.0)'),
 	'friend_time': 'TRTFRIEND',
 	'family_time': 'TRTFAMILY',
 	'caseid': 'TUCASEID',
 	'lineno': 'TULINENO',
 	'relation_code': 'TERRP',
-	'family_income_code': (None, 'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
+	'family_income_code': (
+		['HUFAMINC', 'HEFAMINC', 'HRYEAR4'],
+		'family_income(HUFAMINC, HEFAMINC, HRYEAR4)'),
 	# note that HEFAMINC is interpreted like HUFAMINC because the
 	# codes are the same and only listed in full for HUFAMINC
-	'family_income': (None, "decode('HUFAMINC', family_income(HUFAMINC, HEFAMINC, HRYEAR4))"),
+	'family_income': (
+		['HUFAMINC', 'HEFAMINC', 'HRYEAR4'],
+		"decode('HUFAMINC', family_income(HUFAMINC, HEFAMINC, HRYEAR4))"),
 	'education_code': 'PEEDUCA',
 	'activity_location_code': 'TEWHERE',
 	'duration': 'TUACTDUR',
 	'activity_number': 'TUACTIVITY_N',
 	'start_time': 'TUSTARTTIM',
 	'stop_time': 'TUSTOPTIME',
-	'start_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 0)'),
-	'stop_minute': (None, 'time2minute(TUSTARTTIM, TUSTOPTIME, 1)'),
+	'start_minute': (
+		['TUSTARTTIM', 'TUSTOPTIME'],
+		'time2minute(TUSTARTTIM, TUSTOPTIME, 0)'),
+	'stop_minute': (
+		['TUSTARTTIM', 'TUSTOPTIME'],
+		'time2minute(TUSTARTTIM, TUSTOPTIME, 1)'),
 
 	# Selected meta-summaries
 	'minutes_working': 't050101+t050102',
@@ -161,12 +170,12 @@ Variables = {
 	'weight': 'TUFNWGTP',
 
 	# activity codes are special cased
-	'activity_code': ('TRCODEP', 'normalize_activity_code(TRCODEP)'),
-	'activity_tier1_code': 'normalize_activity_code(TRTIER1P)',
-	'activity_tier2_code': 'normalize_activity_code(TRTIER2P)',
-	'activity': ('TRCODEP', 'decode_activity(TRCODEP)'),
-	'activity_tier1': ('TRTIER1P', 'decode_activity(TRTIER1P)'),
-	'activity_tier2': ('TRTIER2P', 'decode_activity(TRTIER2P)'),
+	'activity_code': (['TRCODEP'], 'normalize_activity_code(TRCODEP)'),
+	'activity_tier1_code': (['TRTIER1P'], 'normalize_activity_code(TRTIER1P)'),
+	'activity_tier2_code': (['TRTIER2P'], 'normalize_activity_code(TRTIER2P)'),
+	'activity': (['TRCODEP'], 'decode_activity(TRCODEP)'),
+	'activity_tier1': (['TRTIER1P'], 'decode_activity(TRTIER1P)'),
+	'activity_tier2': (['TRTIER2P'], 'decode_activity(TRTIER2P)'),
 
 
 	# occupation
@@ -176,19 +185,14 @@ Variables = {
 # name and the expression.
 for aliased in Variables:
 	if not isinstance(Variables[aliased], tuple):
-		Variables[aliased] = (Variables[aliased], Variables[aliased])
+		Variables[aliased] = ([Variables[aliased]], Variables[aliased])
 
 # Automatically add decoded versions of _code variables
-for aliased, (var, expr) in Variables.items():
-	if aliased in [
-			'activity_code',
-			'activity_tier1_code',
-			'activity_tier2_code',
-			'family_income_code'
-		]:
-		continue
-	elif aliased.endswith('_code'):
-		Variables[aliased[:-len('_code')]] = (var, "decode('%s', %s)" % (var, expr))
+for aliased, (inputs, expr) in Variables.items():
+	if aliased.endswith('_code'):
+		if aliased[:-len('_code')] in Variables:
+			continue
+		Variables[aliased[:-len('_code')]] = (inputs, "decode('%s', %s)" % (inputs[0], expr))
 
 def rewrite(original_name):
 	if original_name in Variables:
