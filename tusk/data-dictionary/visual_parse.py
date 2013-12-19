@@ -1,27 +1,3 @@
-
-'''
-def in_bounds(textlines, top=None, left=None, bottom=None, right=None):
-    return [tl for tl in textlines if
-        (top == None or tl.box.y <= top) and
-        (left == None or tl.box.x >= left) and
-        (bottom == None or tl.box.y >= bottom) and
-        (right == None or tl.box.x <= right)
-    ]
-
-def nearest_below(textlines, below):
-    candidates = [tl for tl in textlines if tl.box.y < below]
-    candidates.sort(key=lambda tl: below - tl.box.y)
-    return candidates[0] if len(candidates) else None
-
-def union_box(boxes):
-    boxes = [b.box if isinstance(b, Textline) else b for b in boxes]
-    l, t, r, b = min(b.x for b in boxes), min(b.y for b in boxes), max(b.right for b in boxes), max(b.bottom for b in boxes)
-    return Box(
-        l, t, r, b,
-        r-l, b-t
-    )
-   '''
-
 class Box:
 	def __init__(self, x, y, w=None, h=None, right=None, bottom=None, text=None, tags=None):
 		self.x = x
