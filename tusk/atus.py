@@ -232,7 +232,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 		return parsed
 
 db = ATUS(dataset.connect('sqlite:///%s' % os.path.join(__path__[0], 'db/atus.db')))
-displayed_rows = 5
+displayed_rows = None
 
 if __name__ == '__main__':
 	while True:
@@ -280,9 +280,12 @@ if __name__ == '__main__':
 		try:
 			k = 0
 			for row in db.query(query):
-				print row
+				if False:
+					print row
+				else:
+					print ','.join([str(row[x]) for x in row])
 				k += 1
-				if k >= displayed_rows:
+				if displayed_rows is not None and k >= displayed_rows:
 					break
 		except:
 			print traceback.print_exc()
