@@ -89,7 +89,7 @@ class SQL_weighted_avg:
         self.sum = 0.0
         self.normalized = 0.0
     def step(self, value, weight):
-        self.sum += value
+        self.sum += value * weight
         self.normalized += weight
     def finalize(self):
         return self.sum / self.normalized
