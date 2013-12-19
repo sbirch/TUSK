@@ -79,7 +79,8 @@ def rewrite(sql, table_translator, variable_rewriter, verbose=False):
 		print 'Rewriting:', re.sub('\s+', ' ', sql)
 	# TODO only handles the first statement
 	parsed = sqlparse.parse(sql)[0]
-	#print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
+	if verbose:
+		print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
 	new_tree = _rewrite_parse_tree(parsed, table_translator, variable_rewriter)
 	new_query = new_tree.to_unicode()
 	if verbose:
@@ -120,10 +121,42 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 
 		# replace the table name
 		join_source = parsed.tokens[from_position+1:end_join_source]
-		#print dp, 'Table ID:', table_id
+		#print dp, 'Table ID:', join_source
 		for table_id in join_source:
 			if table_id.is_whitespace():
 				continue
+
+			if isinstance(table_id, sql.Function):
+				respondent_link = table_id.value.startswith('respondent_link')
+				case_link = table_id.value.startswith('case_link')
+				if respondent_link or case_link:
+					# TODO this is a very simple (fragile) parser
+					arguments = table_id.value[table_id.value.index('(')+1:-1]
+					arguments = [x.strip() for x in arguments.split(',')]
+					tables = [table_translator(x) for x in arguments]
+
+					table_conditions = [tables[0]]
+					for i,table in enumerate(tables[1:]):
+						cond = '%s on %s.TUCASEID=%s.TUCASEID' % (
+								table, table, tables[i]
+						)
+						# TODO this hardcoded list of tables with line numbers
+						# is a hack and doesn't account for any of the modules
+						if respondent_link and arguments[i+1] in ['cps', 'roster', 'who', 'respondent']:
+							cond += ' and %s.TULINENO=1' % table
+						table_conditions.append(cond)
+
+					statement = ' inner join '.join(table_conditions)
+
+					parsed.tokens[parsed.tokens.index(table_id)] = sql.Parenthesis([
+							sql.Token(sqlparse.tokens.Group.Parenthesis, '('),
+							# TODO: this is a total violation of the parse tree
+							# but it serializes right
+							sql.Identifier(statement),
+							sql.Token(sqlparse.tokens.Group.Parenthesis, ')')
+					])
+					continue
+
 			parsed.tokens[parsed.tokens.index(table_id)] = _rewrite_parse_tree(
 				table_id,
 				table_translator,
