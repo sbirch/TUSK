@@ -1,0 +1,59 @@
+TODO:
+
+Re-organize
+========
+* Split visual_parse to a seperate module
+* Convert activity extraction to use pdfminer/visual_parse
+* Have specific directory for building a database & lexicon/dicts
+* Easy graphiing
+
+Features
+=======
+* Inflation-adjustment for money
+* Additional appendicies (FIPS state code, Census industry data, etc.)
+* Caching
+* count() w/ filters API
+* Statistical bounds on weighted averages and proportions
+* Evaluate confidence bounds by estimating state populations
+* null-code -1 values?
+* Documentation for aliased variables
+* Ambiguous name errors, e.g. OperationalError: (OperationalError) ambiguous column name: TUFNWGTP u'SELECT TEAGE AS age, weighted_avg(TRTFAMILY, TUFNWGTP) FROM (atusresp_0312 inner join atussum_0312 on atussum_0312.TUCASEID=atusresp_0312.TUCASEID) GROUP BY TEAGE;'
+* Didn't include the right tables errors, e.g. no such column: PRNMCHLD u'SELECT\n\tTEAGE AS age, weighted_avg(TRTFAMILY, atusresp_0312.TUFNWGTP)\n\tFROM (atusresp_0312 inner join atussum_0312 on atussum_0312.TUCASEID=atusresp_0312.TUCASEID) where PRNMCHLD=0 GROUP BY TEAGE;'
+* Extraction tools (to CSV or JSON from query)
+* Include example data-points / records in the documentation
+
+Bugs
+======
+Implications of HUSPNISH for database creation (“01” not same as “1” -- currently cast to integer)
+181302 seems to be missing from the activity lexicon?
+Can't do AS in user queries
+Column keys come back weird (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
+
+
+== Automatically extracted from code ==:
+
+tusk/atus.py:79 smb
+TODO(smb):
+error messaging
+SQL placeholders
+
+tusk/atus.py:85 smb
+# TODO(smb) only handles the first statement
+
+tusk/atus.py:138 smb
+# TODO(smb) this is a very simple (fragile) parser
+
+tusk/atus.py:148 smb
+# TODO(smb) this hardcoded list of tables with line numbers
+# is a hack and doesn't account for any of the modules
+
+tusk/atus.py:158 smb
+# TODO(smb): this is a total violation of the parse tree
+# but it serializes right
+
+tusk/db/create_database.py:57 smb
+# TODO(smb): double and triple check that we don't lose any records here.
+
+tusk/variables.py:182 smb
+# TODO(smb): this is only the right name in the multi-year files
+
