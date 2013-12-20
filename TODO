@@ -3,8 +3,11 @@ TODO:
 Re-organize
 ========
 * Split visual_parse to a seperate module
+* Split rewriter to a seperate module?
 * Convert activity extraction to use pdfminer/visual_parse
 * Have specific directory for building a database & lexicon/dicts
+* Clean out dead code / move analysis code out
+* Make pip-installable
 
 Well-defined features
 =======================
@@ -18,6 +21,8 @@ Well-defined features
 * Include example data-points / records in the documentation
 * Automatically suggest filing an issue on Github from traceback
 * Convert asserts to more meaningful errors
+* Rewriter can use schema for auto-join and possibly ambiguous column name/no such
+column errors.
 
 Bugs
 ======
