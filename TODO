@@ -5,7 +5,6 @@ Re-organize
 * Split visual_parse to a seperate module
 * Convert activity extraction to use pdfminer/visual_parse
 * Have specific directory for building a database & lexicon/dicts
-* Easy graphiing
 
 Features
 =======
@@ -27,7 +26,7 @@ Bugs
 Implications of HUSPNISH for database creation (“01” not same as “1” -- currently cast to integer)
 181302 seems to be missing from the activity lexicon?
 Can't do AS in user queries
-Column keys come back weird (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
+Column keys come back weird (appears to be a SQLAlchemy problem) (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
 
 
 == Automatically extracted from code ==:
