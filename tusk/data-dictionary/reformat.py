@@ -1,11 +1,5 @@
 import json, re
 
-'''
-TODO:
-	Variable table of contents
-	Variable statistics!
-'''
-
 variables = json.load(open('data_dictionary.json', 'rb'))
 
 FL_CODES = {

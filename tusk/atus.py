@@ -25,11 +25,14 @@ class ATUS:
 					f = getattr(variables, obj)
 					# n.b. sql_ functions can only have normal style arguments,
 					# no funny business.
-					dbapi_con.create_function(obj[4:], len(inspect.getargspec(f).args), f)
+					dbapi_con.create_function(obj[4:],
+						len(inspect.getargspec(f).args), f)
 				elif obj.startswith('SQL_'):
 					f = getattr(variables, obj)
-					dbapi_con.create_aggregate(obj[4:], len(inspect.getargspec(f.step).args)-1, f)
+					dbapi_con.create_aggregate(obj[4:],
+						len(inspect.getargspec(f.step).args)-1, f)
 		sqlalchemy.event.listen(self.db.engine, 'connect', _hook)
+
 	def _variable_rewriter(self, mv):
 		table = ''
 		if mv.count('.') == 1:
@@ -50,6 +53,8 @@ class ATUS:
 		if not self.db.engine.has_table(key) and self.db.engine.has_table(self._infer(key)):
 			key = self._infer(key)
 		return self.db[key]
+	def query_tuples(self, q):
+		self.db.executable.execute(query, **kw)
 	def query(self, q, explain=False, verbose=False):
 		return self.db.query(('EXPLAIN ' if explain else '') + self.rewrite(q, verbose=verbose))
 	def get(self, q, explain=False, verbose=False):
@@ -71,13 +76,13 @@ def rewrite(sql, table_translator, variable_rewriter, verbose=False):
 	variable rewriter. Handles SELECT statements with arbitrary
 	WHERE clauses.
 
-	TODO:
+	TODO(smb):
 		error messaging
 		SQL placeholders
 	'''
 	if verbose:
 		print 'Rewriting:', re.sub('\s+', ' ', sql)
-	# TODO only handles the first statement
+	# TODO(smb) only handles the first statement
 	parsed = sqlparse.parse(sql)[0]
 	if verbose:
 		print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
@@ -130,7 +135,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 				respondent_link = table_id.value.startswith('respondent_link')
 				case_link = table_id.value.startswith('case_link')
 				if respondent_link or case_link:
-					# TODO this is a very simple (fragile) parser
+					# TODO(smb) this is a very simple (fragile) parser
 					arguments = table_id.value[table_id.value.index('(')+1:-1]
 					arguments = [x.strip() for x in arguments.split(',')]
 					tables = [table_translator(x) for x in arguments]
@@ -140,7 +145,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 						cond = '%s on %s.TUCASEID=%s.TUCASEID' % (
 								table, table, tables[i]
 						)
-						# TODO this hardcoded list of tables with line numbers
+						# TODO(smb) this hardcoded list of tables with line numbers
 						# is a hack and doesn't account for any of the modules
 						if respondent_link and arguments[i+1] in ['cps', 'roster', 'who', 'respondent']:
 							cond += ' and %s.TULINENO=1' % table
@@ -150,7 +155,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 
 					parsed.tokens[parsed.tokens.index(table_id)] = sql.Parenthesis([
 							sql.Token(sqlparse.tokens.Group.Parenthesis, '('),
-							# TODO: this is a total violation of the parse tree
+							# TODO(smb): this is a total violation of the parse tree
 							# but it serializes right
 							sql.Identifier(statement),
 							sql.Token(sqlparse.tokens.Group.Parenthesis, ')')

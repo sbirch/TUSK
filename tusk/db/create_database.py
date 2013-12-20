@@ -54,7 +54,7 @@ def build_table(cur, conn, table_name, csv_reader):
 		','.join(['CAST(? AS %s)' % data_types[col] for col in columns])
 	)
 
-	# TODO: double and triple check that we don't lose any records here.
+	# TODO(smb): double and triple check that we don't lose any records here.
 	records = itertools.chain(sniffed_data, csv_reader)
 
 	batch = True
