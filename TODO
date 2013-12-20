@@ -6,27 +6,25 @@ Re-organize
 * Convert activity extraction to use pdfminer/visual_parse
 * Have specific directory for building a database & lexicon/dicts
 
-Features
-=======
+Well-defined features
+=======================
 * Inflation-adjustment for money
 * Additional appendicies (FIPS state code, Census industry data, etc.)
 * Caching
-* count() w/ filters API
-* Statistical bounds on weighted averages and proportions
-* Evaluate confidence bounds by estimating state populations
-* null-code -1 values?
-* Documentation for aliased variables
+* null-code -1 values when someone is outside the edited universe?
 * Ambiguous name errors, e.g. OperationalError: (OperationalError) ambiguous column name: TUFNWGTP u'SELECT TEAGE AS age, weighted_avg(TRTFAMILY, TUFNWGTP) FROM (atusresp_0312 inner join atussum_0312 on atussum_0312.TUCASEID=atusresp_0312.TUCASEID) GROUP BY TEAGE;'
 * Didn't include the right tables errors, e.g. no such column: PRNMCHLD u'SELECT\n\tTEAGE AS age, weighted_avg(TRTFAMILY, atusresp_0312.TUFNWGTP)\n\tFROM (atusresp_0312 inner join atussum_0312 on atussum_0312.TUCASEID=atusresp_0312.TUCASEID) where PRNMCHLD=0 GROUP BY TEAGE;'
-* Extraction tools (to CSV or JSON from query)
+* Extraction tool (to CSV or JSON from query)
 * Include example data-points / records in the documentation
+* Automatically suggest filing an issue on Github from traceback
+* Convert asserts to more meaningful errors
 
 Bugs
 ======
-Implications of HUSPNISH for database creation (“01” not same as “1” -- currently cast to integer)
-181302 seems to be missing from the activity lexicon?
-Can't do AS in user queries
-Column keys come back weird (appears to be a SQLAlchemy problem) (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
+* Implications of HUSPNISH for database creation (“01” not same as “1” -- currently cast to * integer)
+* 181302 seems to be missing from the activity lexicon?
+* Can't do AS in user queries
+* Column keys come back weird (appears to be a SQLAlchemy problem) (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
 
 
 == Automatically extracted from code ==:
