@@ -23,6 +23,7 @@ Well-defined features
 * Convert asserts to more meaningful errors
 * Rewriter can use schema for auto-join and possibly ambiguous column name/no such
 column errors.
+* Should be able to add (& remove?) tables
 
 Bugs
 ======
