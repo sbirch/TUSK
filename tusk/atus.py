@@ -288,12 +288,12 @@ if __name__ == '__main__':
 			continue
 		if query.startswith('.rewrite'):
 			q = query.split(' ', 1)[1]
-			print db.rewrite(q)
+			print db.rewrite(q, verbose=True)
 			continue
 		try:
 			k = 0
 			for row in db.query(query):
-				if False:
+				if True:
 					print row
 				else:
 					print ','.join([str(row[x]) for x in row])

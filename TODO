@@ -30,6 +30,7 @@ Bugs
 * Implications of HUSPNISH for database creation (“01” not same as “1” -- currently cast to * integer)
 * 181302 seems to be missing from the activity lexicon?
 * Can't do AS in user queries
+(try: select age, weighted_avg(family_time, respondents.weight) as avg_famtime from respondent_link(respondents, summary) group by age)
 * Column keys come back weird (appears to be a SQLAlchemy problem) (e.g. {u'age': 15, u'TUFNWGTP)': 268.2146638993414})
 
 
