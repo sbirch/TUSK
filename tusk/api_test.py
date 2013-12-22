@@ -1,4 +1,4 @@
-import atus
+from tusk import atus
 import variables
 from collections import namedtuple
 import sys

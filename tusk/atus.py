@@ -86,7 +86,7 @@ def rewrite(sql, table_translator, variable_rewriter, verbose=False):
 	parsed = sqlparse.parse(sql)[0]
 	if verbose:
 		print 'Tokens:', list([x for x in parsed.flatten() if not x.is_whitespace()])
-	new_tree = _rewrite_parse_tree(parsed, table_translator, variable_rewriter)
+	new_tree = _rewrite_parse_tree(parsed, table_translator, variable_rewriter, verbose=verbose)
 	new_query = new_tree.to_unicode()
 	if verbose:
 		print 'Rewritten:', re.sub('\s+', ' ', new_query)
@@ -95,7 +95,8 @@ def rewrite(sql, table_translator, variable_rewriter, verbose=False):
 def is_base_identifier(t):
 	return isinstance(t, sql.Identifier) or t.ttype in [token.Keyword, token.Name]
 
-def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=None, d=0):
+def _rewrite_parse_tree(parsed, table_translator, variable_rewriter,
+		context=None, d=0, verbose=False):
 	dp = '  ' * d
 
 	if isinstance(parsed, sql.Statement) and parsed.get_type() == 'SELECT':
@@ -112,14 +113,15 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 
 		# get the selected column tokens and rewrite them
 		terms = [x for x in parsed.tokens[1 + distinct_present:from_position] if not x.is_whitespace()]
-		#print dp, 'Terms:', terms
+		if verbose:
+			print dp, 'SELECT result columns:', terms
 		assert len(terms) == 1
 		terms = terms[0]
 		parsed.tokens[parsed.tokens.index(terms)] = _rewrite_parse_tree(
 			terms,
 			table_translator,
 			variable_rewriter,
-			context='result-cols', d=d+1)
+			context='result-cols', d=d+1, verbose=verbose)
 
 		end_join_source = find(parsed.tokens,
 			lambda x: isinstance(x, sql.Where) or (x.ttype == token.Keyword and x.value.lower() in ['order', 'group', 'limit']))
@@ -166,7 +168,7 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 				table_id,
 				table_translator,
 				variable_rewriter,
-				context='table', d=d+1)
+				context='table', d=d+1, verbose=verbose)
 		
 		#print dp, 'end_join_source:', end_join_source, repr(parsed.tokens[end_join_source if end_join_source is not None else -1])
 		
@@ -180,30 +182,36 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 					tok,
 					table_translator,
 					variable_rewriter,
-					d=d+1)
+					d=d+1, verbose=verbose)
 
 		return parsed
 	elif is_base_identifier(parsed):
-		#print dp, 'base_identifier case context=%s' % context, repr(parsed)
+		if verbose:
+			print dp, 'base_identifier case context=%s %r/"%s"' % (context, parsed, parsed)
 		if context == 'result-cols':
 			rewritten = variable_rewriter(parsed.value)
 			if parsed.value != rewritten:
-				#print dp, 'Rewriting result-cols %s => %s' % (parsed.value, variable_rewriter(parsed.value))
+				if verbose:
+					print dp, 'Rewriting result-cols %s => %s' % (parsed.value, variable_rewriter(parsed.value))
 				
 				result_name = parsed.value.split('.')[-1]
 				return sql.Identifier('%s AS %s' % (variable_rewriter(parsed.value), result_name))
 			else:
-				#print dp, 'Leaving %r be' % parsed.value
-				return sql.Identifier(parsed.value)
+				if verbose:
+					print dp, 'Leaving %r be' % parsed
+				return parsed
 		elif context == 'table':
 			if parsed.ttype == token.Keyword:
 				return parsed
-			#print dp, 'Rewriting %s => %s' % (parsed.value, table_translator(parsed.value))
+			if verbose:
+				print dp, 'Rewriting %s => %s' % (parsed.value, table_translator(parsed.value))
 			return sql.Identifier(table_translator(parsed.value))
 		else:
 			rewritten = variable_rewriter(parsed.value)
 			if parsed.value != rewritten:
-				#print dp, 'Rewriting %s => (%s)' % (parsed.value, variable_rewriter(parsed.value))
+				if verbose:
+					print dp, 'Rewriting %s => (%s)' % (parsed.value, variable_rewriter(parsed.value))
+
 				if rewritten[0] == '(' and rewritten[-1] == ')':
 					rewritten = rewritten[1:-1]
 					return sql.Parenthesis([
@@ -214,26 +222,26 @@ def _rewrite_parse_tree(parsed, table_translator, variable_rewriter, context=Non
 				else:
 					return sql.Identifier(rewritten)
 			else:
-				#print dp, 'Leaving %r be' % parsed.value
-				pass
-			return sql.Identifier(parsed.value)
+				if verbose:
+					print dp, 'Leaving %r be' % parsed
+				return parsed
 	elif isinstance(parsed, sql.TokenList):
-		#print dp, 'token-list case', repr(parsed)
+		if verbose:
+			print dp, 'token-list case', repr(parsed.tokens)
 		for i,tok in enumerate(parsed.tokens):
 			if is_base_identifier(tok) or isinstance(tok, sql.TokenList):
 				parsed.tokens[i] = _rewrite_parse_tree(
 					tok, table_translator, variable_rewriter,
 					context=context if isinstance(parsed, sql.IdentifierList) else None,
-					d=d+1)
+					d=d+1, verbose=verbose)
 			else:
-				#print dp, 'Leaving %r in place' % tok
-				pass
+				if verbose:
+					print dp, 'Leaving %r in place' % tok
 
 		return parsed
-	#elif parsed.is_whitespace() or parsed.ttype == token.Wildcard or (parsed.ttype == token.Punctuation and parsed.value == ';'):
-	#	return parsed
 	else:
-		#raise Exception('Do not recognize: %r' % parsed)
+		if verbose:
+			print dp, 'Returning %r as-is' % parsed
 		return parsed
 
 db = ATUS(dataset.connect('sqlite:///%s' % os.path.join(__path__[0], 'db/atus.db')))
